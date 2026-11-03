@@ -1,31 +1,14 @@
-from dataclasses import fields, is_dataclass
 from datetime import datetime
 from decimal import Decimal
 
 import strawberry
 
+from bss_shared.graphql import DtoConverter
 from bss_shared.pagination import DEFAULT_LIMIT
 from product_catalog import dto
 
-# DTO class -> GraphQL type, filled by @_for so DTOs convert without per-type code.
-_TYPES: dict[type, type] = {}
-
-
-def _for(dto_class: type):
-    def register(gql_class: type) -> type:
-        _TYPES[dto_class] = gql_class
-        return gql_class
-
-    return register
-
-
-def _convert(value):
-    if is_dataclass(value):
-        gql_class = _TYPES[type(value)]
-        return gql_class(**{f.name: _convert(getattr(value, f.name)) for f in fields(value)})
-    if isinstance(value, list):
-        return [_convert(v) for v in value]
-    return value
+_convert = DtoConverter()
+_for = _convert.register
 
 
 @_for(dto.TimePeriod)
