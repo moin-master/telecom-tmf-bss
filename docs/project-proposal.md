@@ -63,12 +63,7 @@ A **modular monolith**: one Python application, one package per TM Forum domain,
 | Validation / models | Pydantic where useful | proposed |
 | Package and environment management | uv | proposed |
 
-Rules that keep modules separable later:
-
-- Each module owns its tables.
-- Modules call each other only through service interfaces and ids, never through another module's repositories or cross-module SQL joins.
-- Modules react to each other through events (for example "order completed" leads to product creation and billing setup), mirroring TM Forum event notifications. A simple in-process event bus first, a message broker possible later.
-- Layering inside a module: GraphQL resolver -> service -> repository.
+Module rules, the service block diagram, dependencies and event flow are in [project-architecture.md](project-architecture.md).
 
 Path to a real application:
 
