@@ -7,22 +7,25 @@ A `uv` workspace: every service is its own Python project, mounted by a host app
 ```
 pyproject.toml              workspace root, members: host, shared, services/*
 host/
-  pyproject.toml
-  src/host/main.py          FastAPI app; mounts each service at /<path>; combined /graphql
-  src/host/combined.py      customer 360 schema, calls services through their clients
+  pyproject.toml            project bss-host
+  src/bss_host/main.py      FastAPI app; mounts each service at /<path>; combined /graphql later
+  src/bss_host/combined.py  customer 360 schema, calls services through their clients (later)
 shared/
-  pyproject.toml
-  src/shared/               config (BSS_*), TM Forum error shape, event bus, db helpers
+  pyproject.toml            project bss-shared
+  src/bss_shared/           config (BSS_*), clock, db helpers (UtcDateTime, DecimalText, sqlite_url),
+                            errors (TmfError), pagination; event bus later
 services/<name>/            <name> is the module name from docs/project-routing.md
   pyproject.toml            depends on shared and on other services only for their client
   src/<pkg>/                <pkg> = <name> with hyphens replaced by underscores
-    app.py                  create_app() returning the ASGI app for this service
-    models.py               SQLAlchemy tables, owned by this service
+    app.py                  create_app() returning the ASGI app; calls init_db() (mounted apps skip lifespan)
+    db.py                   engine, SessionLocal, init_db() (create tables, seed when empty)
+    models.py               SQLAlchemy tables, owned by this service (own Base per service)
     repository.py           only place that touches the session
-    service.py              business rules and state machine
+    service.py              business rules and state machine; maps rows to DTOs
+    dto.py                  plain dataclasses returned by service and client (no ORM objects)
     client.py               public interface other services call (in-process now)
     schema.py               Strawberry types, inputs, resolvers
-    events.py               signals this service publishes
+    events.py               signals this service publishes (when it has any)
     seed.py                 seed data
   data/<name>.db            SQLite file (gitignored)
 specs/                      TM Forum spec snapshot, committed, not updated (see specs/README.md)
