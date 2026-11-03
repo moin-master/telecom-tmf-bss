@@ -1,0 +1,44 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments (uv creates .venv)
+.venv/
+venv/
+env/
+
+# Packaging and build output
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# uv: keep pyproject.toml, uv.lock and .python-version committed
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Local database files (SQLite)
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+data/
+
+# Logs
+*.log
+
+# IDE and OS
+.idea/
+.vscode/
+.DS_Store
