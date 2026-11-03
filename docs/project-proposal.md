@@ -48,7 +48,9 @@ The exact resources and fields will be confirmed by reading the specifications (
 
 ## 5. Architecture (proposed)
 
-A **modular monolith**: one Python application, one package per TM Forum domain, one SQLite database, one GraphQL schema.
+A **workspace-hosted set of services**: one separate Python project per TM Forum domain (a `uv` workspace), each with its own code, SQLite database and GraphQL schema. A thin host app mounts every service under its own path, so everything runs as one process on one port. A combined schema at `/graphql` serves the customer 360 query.
+
+Services call each other through a small client interface per service. Today the client calls the other service's code in the same process; later it can make an HTTP call without changing the callers.
 
 The technologies used (Python, GraphQL, SQLite and the rest) are listed in [project-tech-stack.md](project-tech-stack.md).
 
@@ -57,20 +59,20 @@ Module rules, the service block diagram, dependencies and event flow are in [pro
 Path to a real application:
 
 - SQLite to a production database (for example PostgreSQL) through configuration, since SQLAlchemy abstracts the engine.
-- A module replaced by calls to a real TM Forum service, with the GraphQL schema unchanged.
-- A module split into its own service if needed.
+- A service replaced by calls to a real TM Forum service, with the GraphQL schema unchanged.
+- A service run in its own process on its own port, with a reverse proxy keeping the public URLs and the client interface switched to HTTP.
 
-Alternatives considered: microservices per domain with a GraphQL gateway (more realistic, much heavier), and a monolith that also exposes TM Forum REST endpoints (closer to the standard, doubles the API work).
+Alternatives considered: a single-package modular monolith (simplest, but services are not independent projects), full microservices with a reverse proxy and 15 ports (more realistic, much heavier to run), and a monolith that also exposes TM Forum REST endpoints (closer to the standard, doubles the API work).
 
 ## 6. Technical considerations
 
 | Topic | Approach (proposed) |
 |-------|---------------------|
 | State machines (order, product, ticket) | enforced in the service layer; defined by spec text, not the swagger files |
-| Order orchestration | event-driven inside the monolith, synchronous first for clarity |
+| Order orchestration | event-driven inside the host process, synchronous first for clarity |
 | Billing | simple: monthly recurring charges plus usage; no tax, proration or discounts initially |
 | Money and time | `decimal.Decimal` for amounts, timezone-aware `datetime` (UTC) for timestamps |
 | Billing cycle trigger | an on-demand mutation (for example `runBillingCycle`) before any scheduler |
-| Storage | SQLite file so data survives restarts; seed data in SQL scripts or a Python seed module |
+| Storage | one SQLite file per service so data survives restarts; seed data in SQL scripts or a Python seed module per service |
 | Polymorphism (`@type`), reference objects (`href`), free-form values, PATCH semantics | one agreed policy per issue, written down once |
 | Scope creep | fixed slice order below |

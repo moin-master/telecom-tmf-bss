@@ -9,7 +9,8 @@ Status values: **decided** (agreed), **proposed** (my suggestion, not yet agreed
 | Area | Technology | Status | Notes |
 |------|------------|--------|-------|
 | Language | Python 3.12+ | decided | |
-| API style | GraphQL | decided | one schema, no REST endpoints |
+| API style | GraphQL | decided | one schema per service plus a combined schema, no REST endpoints |
+| Project structure | `uv` workspace, one project per service plus a host app | decided | host mounts every service on one port |
 | GraphQL library | Strawberry | open | code-first, uses type hints; alternative is Ariadne (schema-first), proposal decision 10 |
 | Web framework | FastAPI | proposed | hosts the GraphQL endpoint; Strawberry mounts into it |
 | Persistence | SQLAlchemy 2.x | proposed | ORM and database abstraction |
@@ -28,7 +29,7 @@ Status values: **decided** (agreed), **proposed** (my suggestion, not yet agreed
 
 | Area | Technology | Status | Notes |
 |------|------------|--------|-------|
-| Module-to-module calls | plain Python service interfaces | decided | never through another module's repository |
+| Service-to-service calls | client interface per service, in-process now | decided | HTTP implementation later; never through another service's repository |
 | Events | in-process event bus using blinker | decided | named signals (for example `order_accepted`), synchronous by default, `send_async` available; not an external broker |
 | Message broker | Kafka or similar | later | only if modules are split into separate services |
 

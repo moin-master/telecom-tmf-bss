@@ -38,6 +38,7 @@ Examples:
 
 ## Notes
 
-- One Python application mounts each module's GraphQL router under its path.
-- Paths are for outside clients; modules call each other through Python service interfaces.
-- If modules are split into separate processes later, a reverse proxy keeps these URLs and forwards each path to the module's own port.
+- Each service is a separate Python project that exposes `create_app()`. The host app mounts each one under its path, so one process and one port serve all of them.
+- Paths are for outside clients; services call each other through client interfaces (in-process today).
+- A service can also run alone on its own port for debugging.
+- If services are split into separate processes later, a reverse proxy keeps these URLs and forwards each path to the service's own port.

@@ -35,6 +35,13 @@ dist/
 *.db-shm
 data/
 
+# Cloned TM Forum specs and runtime state
+specs/
+.run/
+
+# Claude Code local overrides
+.claude/settings.local.json
+
 # Logs
 *.log
 

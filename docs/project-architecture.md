@@ -4,7 +4,7 @@ Status: **draft for discussion**. Complements [project-proposal.md](project-prop
 
 ## 1. Overview
 
-Structure of the modular monolith chosen in [project-proposal.md](project-proposal.md) (scope, scenario, stack and decisions live there). Each block below is a module named after the TM Forum Open API it implements.
+Structure of the workspace-hosted services chosen in [project-proposal.md](project-proposal.md) (scope, scenario, stack and decisions live there). Each block below is a service, a separate Python project named after the TM Forum Open API it implements. A host app mounts all services in one process on one port.
 
 ## 2. Service block diagram
 
@@ -15,7 +15,7 @@ Arrows point to the module being called (service interface). Event traffic goes 
                                   |
                                   v
 +----------------------------------------------------------------------+
-|  GraphQL layer (FastAPI + Strawberry): one schema, customer 360      |
+|  Host app (FastAPI): mounts each service; combined schema, cust. 360 |
 +----------------------------------------------------------------------+
         |                                          |
         v                                          v
@@ -62,8 +62,8 @@ Arrows point to the module being called (service interface). Event traffic goes 
 
 +----------------------------+        +--------------------------------+
 | SUPPORT (optional)         |        | STORAGE                        |
-|  [TMF621 Trouble Ticket]   |        | SQLite, one set of tables per  |
-+----------------------------+        | module, never shared           |
+|  [TMF621 Trouble Ticket]   |        | SQLite, one database file per  |
++----------------------------+        | service, never shared          |
                                       +--------------------------------+
 ```
 
@@ -107,7 +107,8 @@ The business steps are in proposal section 3. This is how the modules trigger ea
 
 ## 5. Rules
 
-- Each module owns its tables; no module reads another module's tables or repositories.
-- Cross-module access goes through service interfaces and ids only.
-- Inside a module: GraphQL resolver -> service -> repository.
+- Each service is its own Python project (`uv` workspace member) and owns its database file; no service reads another service's database or repositories.
+- Cross-service access goes through the other service's client interface and ids only. The client calls the service in-process today and can become an HTTP call later.
+- A service never imports another service's internals, only its client interface.
+- Inside a service: GraphQL resolver -> service -> repository.
 - Events mirror TM Forum notifications; the in-process bus can be replaced by a broker later.

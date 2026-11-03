@@ -9,6 +9,10 @@ Telecom BSS: a proof of concept of a telecom business support system using TM Fo
 - Do not write tests until asked.
 - Keep it simple and incremental; reads first, then errors, then writes.
 
+## Claude setup
+
+Rules are in .claude/rules/, project memory in .claude/memory/project-context.md, workflows in .claude/skills/, commands in .claude/commands/ and agents in .claude/agents/. Read .claude/memory/project-context.md at the start of a session.
+
 ## Intended stack (once coding starts)
 
 Listed in docs/project-tech-stack.md (Python 3.12+, FastAPI, Strawberry, SQLAlchemy, SQLite). Layering: GraphQL resolver -> service -> repository. Modules never access another module's repositories.
