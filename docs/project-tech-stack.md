@@ -37,8 +37,8 @@ Status values: **decided** (agreed), **proposed** (my suggestion, not yet agreed
 
 | Area | Standard | Status | Notes |
 |------|----------|--------|-------|
-| Domain APIs | TM Forum Open APIs: TMF620, TMF621, TMF622, TMF629, TMF632, TMF635, TMF637, TMF638, TMF639, TMF641, TMF663, TMF666, TMF676, TMF678, TMF700 | decided | list and notes in proposal section 4; TMF700 to be verified |
-| Spec version | TM Forum v4 or v5 | open | proposal decision 2 |
+| Domain APIs | TM Forum Open APIs: TMF620, TMF621, TMF622, TMF629, TMF632, TMF635, TMF637, TMF638, TMF639, TMF641, TMF663, TMF666, TMF676, TMF678, TMF700 | decided | list and notes in proposal section 4; TMF700 exists in the tmforum-apis repos (v4.0.0 only) |
+| Spec version | TM Forum v5 (OpenAPI yaml) | decided | snapshot in `specs/`, see specs/README.md; the tmforum-apis repos have no v5 file for TMF641, TMF676 and TMF700, so those three are open |
 
 ## 5. Tooling
 

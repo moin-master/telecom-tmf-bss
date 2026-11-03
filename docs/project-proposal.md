@@ -37,14 +37,14 @@ GraphQL lets the client describe that picture in one request while the server re
 | Ordering | TMF622 Product Ordering | order state machine |
 | Service fulfilment | TMF641 Service Ordering, TMF638 Service Inventory | |
 | Resources | TMF639 Resource Inventory | SIM, phone number |
-| Shipment | TMF700 Shipping Order Management | *to be verified against the specs* |
+| Shipment | TMF700 Shipping Order Management | *repo exists, v4.0.0 only, no v5* |
 | Product inventory | TMF637 Product Inventory | what the customer owns |
 | Usage | TMF635 Usage Management | simulated records |
 | Billing | TMF678 Customer Bill Management | bill cycles, bills, applied rates |
 | Payment | TMF676 Payment Management | |
 | Support (optional) | TMF621 Trouble Ticket | |
 
-The exact resources and fields will be confirmed by reading the specifications (see open decisions).
+The exact resources and fields will be confirmed by reading the specifications in [specs/](../specs/README.md). The project uses **TM Forum v5** (OpenAPI yaml). TMF641, TMF676 and TMF700 have no v5 file in the tmforum-apis repositories yet.
 
 ## 5. Architecture (proposed)
 

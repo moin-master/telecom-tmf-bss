@@ -6,5 +6,6 @@ Stable facts. Update when they change.
 - Architecture: `uv` workspace, one separate Python project per TM Forum API under `services/`, a `host` app that mounts them all on ONE port (8060) under `/telecom-tmf-bss/<path>`, a `shared` library. Each service has its own SQLite file. Services call each other only through `client.py`.
 - Docs: docs/project-routing.md (names, paths), docs/project-architecture.md (dependencies, events), docs/project-tech-stack.md, docs/project-proposal.md.
 - Layout of files: .claude/rules/project-layout.md.
+- Specs: `specs/` holds a committed, never-updated snapshot of TM Forum specs (v5 yaml for 12 APIs; v4 swagger JSON for TMF641, TMF676, TMF700). Apache 2.0. See specs/README.md.
 - Planning first, code only on explicit request. Reads, then errors, then writes.
 - The user removed proposal sections 7 to 10 on purpose; do not re-add them.

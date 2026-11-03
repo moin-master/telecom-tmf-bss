@@ -25,7 +25,7 @@ services/<name>/            <name> is the module name from docs/project-routing.
     events.py               signals this service publishes
     seed.py                 seed data
   data/<name>.db            SQLite file (gitignored)
-specs/                      cloned TM Forum specs (gitignored)
+specs/                      TM Forum spec snapshot, committed, not updated (see specs/README.md)
 payloads/<name>/            generated sample payloads
 .run/                       pid files for restart commands (gitignored)
 tests/<name>/               only when tests are requested

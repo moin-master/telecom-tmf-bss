@@ -35,8 +35,7 @@ dist/
 *.db-shm
 data/
 
-# Cloned TM Forum specs and runtime state
-specs/
+# Runtime state
 .run/
 
 # Claude Code local overrides
