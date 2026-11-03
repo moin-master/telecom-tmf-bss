@@ -1,0 +1,10 @@
+[project]
+name = "bss-shared"
+version = "0.1.0"
+description = "Config, database helpers, error shape and pagination shared by all services"
+requires-python = ">=3.12"
+dependencies = ["sqlalchemy>=2.0", "strawberry-graphql>=0.240"]
+
+[build-system]
+requires = ["uv_build>=0.11.11,<0.12"]
+build-backend = "uv_build"

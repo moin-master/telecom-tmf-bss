@@ -1,0 +1,18 @@
+[project]
+name = "product-catalog"
+version = "0.1.0"
+description = "TMF620 Product Catalog Management"
+requires-python = ">=3.12"
+dependencies = [
+    "bss-shared",
+    "fastapi>=0.115",
+    "sqlalchemy>=2.0",
+    "strawberry-graphql[fastapi]>=0.240",
+]
+
+[tool.uv.sources]
+bss-shared = { workspace = true }
+
+[build-system]
+requires = ["uv_build>=0.11.11,<0.12"]
+build-backend = "uv_build"
