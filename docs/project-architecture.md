@@ -10,7 +10,7 @@ Structure of the modular monolith chosen in [project-proposal.md](project-propos
 
 Arrows point to the module being called (service interface). Event traffic goes through the event bus.
 
-```text
+```ascii
             Client: support agent UI, storefront, API consumer
                                   |
                                   v
@@ -91,6 +91,8 @@ What each module is for is described per API in proposal section 4. This table a
 | payment | TMF676 | TMF678 | none |
 | ticket | TMF621 | TMF629 | none |
 
+These are the intended dependencies; they will be adjusted when the specifications are read.
+
 ## 4. Event flow
 
 The business steps are in proposal section 3. This is how the modules trigger each other.
@@ -109,8 +111,3 @@ The business steps are in proposal section 3. This is how the modules trigger ea
 - Cross-module access goes through service interfaces and ids only.
 - Inside a module: GraphQL resolver -> service -> repository.
 - Events mirror TM Forum notifications; the in-process bus can be replaced by a broker later.
-
-## 6. Open points
-
-- The dependencies above are the intended ones; they will be adjusted when the specifications are read.
-- Open decisions on shipment and spec version are tracked in the proposal (section 9).
