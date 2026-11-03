@@ -9,10 +9,6 @@ Telecom BSS: a proof of concept of a telecom business support system using TM Fo
 - Do not write tests until asked.
 - Keep it simple and incremental; reads first, then errors, then writes.
 
-## Decisions
-
-The decision list lives in docs/project-proposal.md (section 9). Update it there when a decision is made rather than recording it here.
-
 ## Intended stack (once coding starts)
 
 Listed in docs/project-tech-stack.md (Python 3.12+, FastAPI, Strawberry, SQLAlchemy, SQLite). Layering: GraphQL resolver -> service -> repository. Modules never access another module's repositories.
