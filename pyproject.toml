@@ -3,7 +3,7 @@ name = "telecom-tmf-bss"
 version = "0.1.0"
 description = "Telecom BSS proof of concept on TM Forum Open APIs, GraphQL and SQLite"
 requires-python = ">=3.12"
-dependencies = ["bss-host", "bss-shared", "product-catalog"]
+dependencies = ["bss-host", "bss-shared", "product-catalog", "shopping-cart"]
 
 [tool.uv]
 package = false
@@ -15,3 +15,4 @@ members = ["host", "shared", "services/*"]
 bss-host = { workspace = true }
 bss-shared = { workspace = true }
 product-catalog = { workspace = true }
+shopping-cart = { workspace = true }

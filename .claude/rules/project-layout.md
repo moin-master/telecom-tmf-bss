@@ -13,7 +13,8 @@ host/
 shared/
   pyproject.toml            project bss-shared
   src/bss_shared/           config (BSS_*), clock, db helpers (UtcDateTime, DecimalText, sqlite_url),
-                            errors (TmfError), pagination; event bus later
+                            errors (TmfError), pagination, graphql (DtoConverter: DTO -> Strawberry type);
+                            event bus later
 services/<name>/            <name> is the module name from docs/project-routing.md
   pyproject.toml            depends on shared and on other services only for their client
   src/<pkg>/                <pkg> = <name> with hyphens replaced by underscores
