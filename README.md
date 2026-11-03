@@ -1,6 +1,6 @@
 # Telecom BSS
 
-A proof of concept of a telecom Business Support System (BSS), built on **TM Forum Open APIs**, exposed through **GraphQL**, and stored in **H2**.
+A proof of concept of a telecom Business Support System (BSS), built on **TM Forum Open APIs**, exposed through **GraphQL**, and stored in **SQLite**.
 
 Status: **planning only. No code yet.**
 
@@ -17,10 +17,11 @@ A single GraphQL query should be able to read across all of it (a "customer 360"
 
 ## Planned stack
 
-- Java 21, Spring Boot, Spring for GraphQL
-- Spring Data JPA with H2 (swappable to a real database later)
-- Lombok
-- Layers: GraphQL controller -> service -> repository
+- Python 3.12+, FastAPI, Strawberry (GraphQL)
+- SQLAlchemy with SQLite (swappable to a real database later)
+- Layers: GraphQL resolver -> service -> repository
+
+Full list in [docs/project-tech-stack.md](docs/project-tech-stack.md).
 
 ## Documents
 
