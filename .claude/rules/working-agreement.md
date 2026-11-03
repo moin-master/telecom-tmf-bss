@@ -5,5 +5,6 @@
 - One service and one slice at a time. Slice order: reads, then errors, then writes.
 - Stay inside this repository. Never commit `data/`, `.env`, `.run/` or `.venv/`. `specs/` is committed (fixed snapshot, Apache 2.0, see specs/README.md); do not edit its files.
 - Do not push, merge or delete branches unless asked.
+- Issues and PRs follow the templates in `.github/`: issue with acceptance criteria first, then a feature branch, a commit that lists the criteria covered and how to test, and a PR that closes the issue. No "Generated with" footer.
 - When a decision changes, update docs/ (decisions live in docs/project-proposal.md).
 - Do not restore or revert content the user removed from docs on purpose; check `git status` first.
