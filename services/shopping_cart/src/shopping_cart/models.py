@@ -17,6 +17,8 @@ class CartItemPrice:
     amount: Decimal
     # Set on time-limited discounts: how many periods the line lasts.
     months: int | None = None
+    # The price before the option's saving, shown struck out next to the amount.
+    regular_amount: Decimal | None = None
 
 
 @dataclass(kw_only=True)

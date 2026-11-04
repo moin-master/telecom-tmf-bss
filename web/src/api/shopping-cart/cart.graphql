@@ -37,6 +37,10 @@ fragment CartItemFields on CartItem {
     name
     priceType
     recurringChargePeriod
+    regularPrice {
+      unit
+      value
+    }
     price {
       taxIncludedAmount {
         unit

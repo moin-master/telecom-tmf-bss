@@ -91,6 +91,8 @@ class ProductOfferingPrice(Lifecycle):
     # Project extension: set when the price applies to one purchase option only
     # (own, tradeIn, finance); empty means it applies to every option.
     purchase_option: str | None = None
+    # Project extension: the price before this option's saving, shown struck out next to the price.
+    regular_value: Decimal | None = None
 
 
 @dataclass(kw_only=True)

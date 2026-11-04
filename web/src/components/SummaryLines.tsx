@@ -1,6 +1,6 @@
 import type { CartFieldsFragment } from '../api/generated/shopping-cart/graphql'
-import { amount, isCredit } from '../lib/cart'
-import { perLabel } from '../lib/format'
+import { isCredit } from '../lib/cart'
+import { LineAmount } from './LineAmount'
 
 type Cart = CartFieldsFragment
 
@@ -27,10 +27,7 @@ export function SummaryLines({ cart, type }: { cart: Cart; type: 'oneTime' | 're
             {group.rows.map((p, i) => (
               <li key={i} className={isCredit(p) ? 'is-credit' : undefined}>
                 <span>{p.name}</span>
-                <b>
-                  {amount(p)}
-                  {perLabel(p.recurringChargePeriod)}
-                </b>
+                <LineAmount line={p} />
               </li>
             ))}
           </ul>

@@ -47,7 +47,7 @@ def _recurring(id, name, value, option=None, **common) -> ProductOfferingPrice:
     )
 
 
-def _one_time(id, name, value, option=None, **common) -> ProductOfferingPrice:
+def _one_time(id, name, value, option=None, regular=None, **common) -> ProductOfferingPrice:
     return ProductOfferingPrice(
         id=id,
         name=name,
@@ -55,6 +55,7 @@ def _one_time(id, name, value, option=None, **common) -> ProductOfferingPrice:
         price_value=Decimal(value),
         price_unit=CURRENCY,
         purchase_option=option,
+        regular_value=Decimal(regular) if regular else None,
         **_common(**common),
     )
 
@@ -302,7 +303,7 @@ def load(repo: CatalogRepository) -> None:
             _one_time(f"POP-{base + 1}", f"{tier} bundle phone, own it", own, "own"),
             _one_time(
                 f"POP-{base + 2}", f"{tier} bundle phone with trade-in",
-                str(Decimal(own) - Decimal(credit)), "tradeIn",
+                str(Decimal(own) - Decimal(credit)), "tradeIn", regular=own,
             ),
             _one_time(
                 f"POP-{base + 3}", f"{tier} bundle phone finance, paid today", upfront, "finance"
