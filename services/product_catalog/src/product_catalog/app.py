@@ -3,15 +3,14 @@ from collections.abc import AsyncIterator
 from fastapi import FastAPI
 from strawberry.fastapi import GraphQLRouter
 
-from product_catalog.db import SessionLocal, init_db
+from product_catalog.db import database, init_db
 from product_catalog.repository import CatalogRepository
 from product_catalog.schema import schema
 from product_catalog.service import CatalogService
 
 
 async def _context() -> AsyncIterator[dict]:
-    with SessionLocal() as session:
-        yield {"catalog": CatalogService(CatalogRepository(session))}
+    yield {"catalog": CatalogService(CatalogRepository(database))}
 
 
 def create_app() -> FastAPI:

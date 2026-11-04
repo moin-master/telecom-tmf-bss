@@ -1,18 +1,16 @@
 from pathlib import Path
 
-from bss_shared.db import make_session_factory, sqlite_url
+from bss_shared.db import mongita_database
 from product_catalog import seed
-from product_catalog.models import Base, Catalog
+from product_catalog.repository import CatalogRepository
 
 _DEFAULT_DIR = Path(__file__).resolve().parents[2] / "data"
 
-engine, SessionLocal = make_session_factory(sqlite_url("product_catalog", _DEFAULT_DIR))
+database = mongita_database("product_catalog", _DEFAULT_DIR)
 
 
 def init_db() -> None:
-    """Create the tables and load seed data into an empty database."""
-    Base.metadata.create_all(engine)
-    with SessionLocal() as session:
-        if session.query(Catalog).first() is None:
-            seed.load(session)
-            session.commit()
+    """Load seed data into an empty database."""
+    repo = CatalogRepository(database)
+    if repo.is_empty():
+        seed.load(repo)

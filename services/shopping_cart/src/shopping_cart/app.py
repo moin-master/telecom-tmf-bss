@@ -4,15 +4,14 @@ from fastapi import FastAPI
 from strawberry.fastapi import GraphQLRouter
 
 from product_catalog.client import ProductCatalogClient
-from shopping_cart.db import SessionLocal, init_db
+from shopping_cart.db import database, init_db
 from shopping_cart.repository import CartRepository
 from shopping_cart.schema import schema
 from shopping_cart.service import CartService
 
 
 async def _context() -> AsyncIterator[dict]:
-    with SessionLocal() as session:
-        yield {"cart": CartService(CartRepository(session), ProductCatalogClient())}
+    yield {"cart": CartService(CartRepository(database), ProductCatalogClient())}
 
 
 def create_app() -> FastAPI:

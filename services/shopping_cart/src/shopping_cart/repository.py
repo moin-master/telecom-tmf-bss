@@ -1,20 +1,21 @@
-from sqlalchemy.orm import Session
+from mongita.database import Database
 
+from bss_shared.db import from_doc, to_doc
 from shopping_cart.models import CartItem, ShoppingCart
 
 
 class CartRepository:
-    def __init__(self, session: Session):
-        self.session = session
+    def __init__(self, database: Database):
+        self.db = database
 
     def get(self, id: str) -> ShoppingCart | None:
-        return self.session.get(ShoppingCart, id)
+        doc = self.db[ShoppingCart.collection].find_one({"_id": id})
+        return None if doc is None else from_doc(ShoppingCart, doc)
 
-    def add(self, cart: ShoppingCart) -> None:
-        self.session.add(cart)
+    def save(self, cart: ShoppingCart) -> None:
+        self.db[ShoppingCart.collection].replace_one(
+            {"_id": cart.id}, to_doc(cart), upsert=True
+        )
 
     def remove_item(self, cart: ShoppingCart, item: CartItem) -> None:
         cart.items.remove(item)
-
-    def commit(self) -> None:
-        self.session.commit()

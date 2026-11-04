@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Telecom BSS: a proof of concept of a telecom business support system using TM Forum Open APIs, GraphQL and SQLite. See README.md and docs/project-proposal.md.
+Telecom BSS: a proof of concept of a telecom business support system using TM Forum Open APIs, GraphQL and Mongita. See README.md and docs/project-proposal.md.
 
 ## Working agreement
 
@@ -15,4 +15,4 @@ Rules are in .claude/rules/, project memory in .claude/memory/project-context.md
 
 ## Intended stack (once coding starts)
 
-Listed in docs/project-tech-stack.md (Python 3.12+, FastAPI, Strawberry, SQLAlchemy, SQLite). Layering: GraphQL resolver -> service -> repository. Modules never access another module's repositories.
+Listed in docs/project-tech-stack.md (Python 3.12+, FastAPI, Strawberry, Mongita). Layering: GraphQL resolver -> service -> repository. Modules never access another module's repositories.

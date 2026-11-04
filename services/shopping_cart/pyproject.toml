@@ -7,7 +7,7 @@ dependencies = [
     "bss-shared",
     "product-catalog",
     "fastapi>=0.115",
-    "sqlalchemy>=2.0",
+    "mongita>=1.2",
     "strawberry-graphql[fastapi]>=0.240",
 ]
 

@@ -1,4 +1,4 @@
-"""Plain data returned by the service and the client. No ORM objects leave the service."""
+"""Plain data returned by the service and the client. No stored documents leave the service."""
 
 from dataclasses import dataclass, field
 from datetime import datetime

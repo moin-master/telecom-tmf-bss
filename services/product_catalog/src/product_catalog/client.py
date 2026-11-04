@@ -1,6 +1,6 @@
 """The only module other services import. In-process today; an HTTP version can replace it later."""
 
-from product_catalog.db import SessionLocal, init_db
+from product_catalog.db import database, init_db
 from product_catalog.dto import ProductOffering, ProductOfferingPrice
 from product_catalog.repository import CatalogRepository
 from product_catalog.service import CatalogService
@@ -22,5 +22,4 @@ def _ensure_ready() -> None:
 class ProductCatalogClient:
     def get_offering(self, id: str) -> ProductOffering:
         _ensure_ready()
-        with SessionLocal() as session:
-            return CatalogService(CatalogRepository(session)).get_offering(id)
+        return CatalogService(CatalogRepository(database)).get_offering(id)

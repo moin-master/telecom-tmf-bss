@@ -10,7 +10,7 @@ Input: service name from docs/project-routing.md (for example `order`). Layout i
 1. Look up the name, TMF number and URL path in docs/project-routing.md. Stop if the name is not there.
 2. If the workspace root `pyproject.toml` does not exist, run `uv init --bare` and add `[tool.uv.workspace] members = ["host", "shared", "services/*"]`. Create `shared` and `host` projects the same way when missing.
 3. `uv init --package services/<name> --name <name>`; rename the package folder to `<pkg>` (hyphens to underscores) if needed.
-4. Add dependencies: `uv add --package <name> fastapi strawberry-graphql sqlalchemy` and `uv add --package <name> --editable ./shared`.
+4. Add dependencies: `uv add --package <name> fastapi strawberry-graphql mongita` and `uv add --package <name> --editable ./shared`.
 5. Create the files listed in the layout (`app.py`, `models.py`, `repository.py`, `service.py`, `client.py`, `schema.py`, `events.py`, `seed.py`) with `create_app()` returning an ASGI app that serves `/graphql`, and a `/health` route.
 6. Register the service in `host/src/bss_host/main.py` (the `SERVICES` map) and in the root `pyproject.toml` dependencies and sources, and in `host/pyproject.toml`. Use `uv_build` as the build backend, as the existing projects do.
 7. Run `uv sync` and `uv run python -c "import <pkg>.app"` to prove it imports. Start the host and request `/telecom-tmf-bss/<path>/health`.

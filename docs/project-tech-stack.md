@@ -13,7 +13,7 @@ Status values: **decided** (agreed), **proposed** (my suggestion, not yet agreed
 | Project structure | `uv` workspace, one project per service plus a host app | decided | host mounts every service on one port |
 | GraphQL library | Strawberry | open | code-first, uses type hints; alternative is Ariadne (schema-first), proposal decision 10 |
 | Web framework | FastAPI | proposed | hosts the GraphQL endpoint; Strawberry mounts into it |
-| Persistence | SQLAlchemy 2.x | proposed | ORM and database abstraction |
+| Persistence | Mongita | proposed | MongoDB-style API (pymongo-like), documents stored as files; no ORM, repositories use collections directly |
 | Validation / models | Pydantic | proposed | where useful, for example input checking |
 | Money and time | `decimal.Decimal`, timezone-aware `datetime` (UTC) | proposed | no floats for money |
 
@@ -21,8 +21,8 @@ Status values: **decided** (agreed), **proposed** (my suggestion, not yet agreed
 
 | Area | Technology | Status | Notes |
 |------|------------|--------|-------|
-| Database | SQLite | proposed | embedded, file-based, no separate server; swappable later through SQLAlchemy |
-| Seed data | SQL scripts or a Python seed module | open | loaded at startup for the read-only stages |
+| Database | Mongita | decided | embedded document database, no separate server, no install beyond pip; swappable to MongoDB later |
+| Seed data | a Python seed module | open | loaded at startup for the read-only stages |
 | Production database | PostgreSQL | later | example target only, not decided |
 
 ## 3. Integration and events
