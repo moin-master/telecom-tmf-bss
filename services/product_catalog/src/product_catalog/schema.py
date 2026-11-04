@@ -56,6 +56,23 @@ class ProductOfferingRelationship:
     relationship_type: str
 
 
+@_for(dto.BundledProductOfferingOption)
+@strawberry.type
+class BundledProductOfferingOption:
+    number_rel_offer_default: int
+    number_rel_offer_lower_limit: int
+    number_rel_offer_upper_limit: int
+
+
+@_for(dto.BundledProductOffering)
+@strawberry.type
+class BundledProductOffering:
+    id: str
+    name: str
+    role: str
+    bundled_product_offering_option: BundledProductOfferingOption
+
+
 @_for(dto.Duration)
 @strawberry.type
 class Duration:
@@ -122,7 +139,7 @@ class ProductOffering:
     category: list[Ref]
     product_specification: ProductSpecification | None
     product_offering_price: list[ProductOfferingPrice]
-    bundled_product_offering: list[Ref]
+    bundled_product_offering: list[BundledProductOffering]
     product_offering_relationship: list[ProductOfferingRelationship]
     product_offering_term: list[ProductOfferingTerm]
 

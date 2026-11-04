@@ -1,0 +1,6 @@
+query AvailableNumbers($filter: ResourceFilter) {
+  resourceList(filter: $filter) {
+    id
+    value
+  }
+}

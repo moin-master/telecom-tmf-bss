@@ -104,6 +104,19 @@ class Relation:
 
 
 @dataclass(kw_only=True)
+class BundledEntry:
+    """A component of a bundle. The three limits are TMF620 bundledProductOfferingOption
+    (1/1/1 is a fixed part of the bundle). `role` is a project extension: device, plan,
+    sim or addOn."""
+
+    id: str
+    role: str
+    number_rel_offer_default: int = 1
+    number_rel_offer_lower_limit: int = 1
+    number_rel_offer_upper_limit: int = 1
+
+
+@dataclass(kw_only=True)
 class Term:
     """TMF620 productOfferingTerm. `available_with` is a project extension: the
     purchase options the term can be combined with (empty means all)."""
@@ -125,12 +138,14 @@ class ProductOffering(Lifecycle):
     specification_id: str | None = None
     category_ids: list[str] = field(default_factory=list)
     price_ids: list[str] = field(default_factory=list)
-    bundled_ids: list[str] = field(default_factory=list)
+    bundled_entries: list[BundledEntry] = field(default_factory=list)
     relations: list[Relation] = field(default_factory=list)
     terms: list[Term] = field(default_factory=list)
 
     specification: ProductSpecification | None = field(default=None, metadata=TRANSIENT)
-    bundled: list["ProductOffering"] = field(default_factory=list, metadata=TRANSIENT)
+    bundled: list[tuple[BundledEntry, "ProductOffering"]] = field(
+        default_factory=list, metadata=TRANSIENT
+    )
     related: list[tuple[str, "ProductOffering"]] = field(
         default_factory=list, metadata=TRANSIENT
     )

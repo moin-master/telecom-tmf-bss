@@ -15,6 +15,7 @@ const service = (path: string) => ({
 const config: CodegenConfig = {
   generates: {
     'src/api/generated/product-catalog/': service('product-catalog'),
+    'src/api/generated/resource/': service('resource'),
     'src/api/generated/shopping-cart/': service('shopping-cart'),
   },
 }

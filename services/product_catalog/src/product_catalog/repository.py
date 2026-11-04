@@ -125,7 +125,9 @@ class CatalogRepository:
             c for c in (self._one(Category, i) for i in row.category_ids) if c
         ]
         row.bundled = [
-            b for b in (self._one(ProductOffering, i) for i in row.bundled_ids) if b
+            (entry, offer)
+            for entry in row.bundled_entries
+            if (offer := self._one(ProductOffering, entry.id))
         ]
         row.related = [
             (rel.relationship_type, offer)

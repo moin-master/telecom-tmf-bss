@@ -37,6 +37,21 @@ class Relationship:
 
 
 @dataclass(frozen=True)
+class BundledProductOfferingOption:
+    number_rel_offer_default: int
+    number_rel_offer_lower_limit: int
+    number_rel_offer_upper_limit: int
+
+
+@dataclass(frozen=True)
+class BundledProductOffering:
+    id: str
+    name: str
+    role: str
+    bundled_product_offering_option: BundledProductOfferingOption
+
+
+@dataclass(frozen=True)
 class Duration:
     amount: int
     units: str
@@ -105,7 +120,7 @@ class ProductOffering:
     category: list[Ref] = field(default_factory=list)
     product_specification: ProductSpecification | None = None
     product_offering_price: list[ProductOfferingPrice] = field(default_factory=list)
-    bundled_product_offering: list[Ref] = field(default_factory=list)
+    bundled_product_offering: list[BundledProductOffering] = field(default_factory=list)
     product_offering_relationship: list[Relationship] = field(default_factory=list)
     product_offering_term: list[ProductOfferingTerm] = field(default_factory=list)
 

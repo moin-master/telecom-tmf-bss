@@ -8,7 +8,8 @@ export type OfferData = NonNullable<OfferQuery['productOffering']>
 // The left panel: what the offer is. Everything about price and the bill is on the right.
 export function OfferInfo({ offer }: { offer: OfferData }) {
   const theme = offerTheme(offer.category)
-  const specs = offer.productSpecification?.productSpecCharacteristic ?? []
+  // Characteristics without values (such as the MSISDN chosen in the cart) are not specs of the product.
+  const specs = (offer.productSpecification?.productSpecCharacteristic ?? []).filter((s) => s.values.length > 0)
 
   return (
     <div className="detail__left">

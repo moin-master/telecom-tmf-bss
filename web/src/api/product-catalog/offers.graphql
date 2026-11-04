@@ -8,6 +8,10 @@ query Offers($offset: Int!, $limit: Int!, $filter: ProductOfferingFilter) {
     bundledProductOffering {
       id
       name
+      role
+      bundledProductOfferingOption {
+        numberRelOfferLowerLimit
+      }
     }
     productOfferingRelationship {
       id
@@ -49,6 +53,10 @@ query Offer($id: String!) {
     bundledProductOffering {
       id
       name
+      role
+      bundledProductOfferingOption {
+        numberRelOfferLowerLimit
+      }
     }
     productOfferingRelationship {
       id

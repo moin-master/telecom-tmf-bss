@@ -166,7 +166,20 @@ class CatalogService:
             product_offering_price=[
                 _price(p) for p in row.prices if _is_visible(p, at)
             ],
-            bundled_product_offering=_visible_refs(row.bundled, at),
+            bundled_product_offering=[
+                dto.BundledProductOffering(
+                    id=offer.id,
+                    name=offer.name,
+                    role=entry.role,
+                    bundled_product_offering_option=dto.BundledProductOfferingOption(
+                        entry.number_rel_offer_default,
+                        entry.number_rel_offer_lower_limit,
+                        entry.number_rel_offer_upper_limit,
+                    ),
+                )
+                for entry, offer in row.bundled
+                if _is_visible(offer, at)
+            ],
             product_offering_relationship=[
                 dto.Relationship(r.id, r.name, kind)
                 for kind, r in row.related

@@ -32,3 +32,8 @@ export function headlinePrice<T extends Price>(prices: T[]): T | undefined {
 export function otherPrices<T extends Price>(prices: T[], headline?: T): T[] {
   return prices.filter((p) => p.price && p !== headline)
 }
+
+// "9991702283968" -> "+999 170 2283968" (country code, network, subscriber)
+export function phoneNumber(msisdn: string): string {
+  return msisdn.length > 6 ? `+${msisdn.slice(0, 3)} ${msisdn.slice(3, 6)} ${msisdn.slice(6)}` : `+${msisdn}`
+}
