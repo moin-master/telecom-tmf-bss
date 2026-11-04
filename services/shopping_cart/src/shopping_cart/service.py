@@ -10,6 +10,7 @@ from shopping_cart import dto, models
 from shopping_cart.repository import CartRepository
 
 MAX_QUANTITY = 99
+DEFAULT_OPTION = "own"
 
 
 def _recurring_period(price: ProductOfferingPrice) -> str | None:
@@ -33,6 +34,7 @@ def _item(row: models.CartItem) -> dto.CartItem:
         status=row.status,
         quantity=row.quantity,
         product_offering=dto.Ref(row.offering_id, row.offering_name),
+        purchase_option=row.purchase_option,
         item_price=[
             _cart_price(p.name, p.price_type, p.recurring_period, p.unit, p.amount)
             for p in row.prices
@@ -102,7 +104,13 @@ class CartService:
     def get_cart(self, id: str) -> dto.ShoppingCart:
         return _cart(self._cart_row(id))
 
-    def add_item(self, cart_id: str, offering_id: str, quantity: int) -> dto.ShoppingCart:
+    def add_item(
+        self,
+        cart_id: str,
+        offering_id: str,
+        quantity: int,
+        purchase_option: str | None = None,
+    ) -> dto.ShoppingCart:
         self._check_quantity(quantity)
         cart = self._cart_row(cart_id)
         # Raises NotFound for offerings that are retired, expired or unknown.
@@ -110,12 +118,20 @@ class CartService:
         if not offering.is_sellable:
             raise BadRequestError(f"ProductOffering {offering_id} is not sellable")
 
-        existing = next((i for i in cart.items if i.offering_id == offering_id), None)
+        option = self._purchase_option(offering, purchase_option)
+        existing = next(
+            (
+                i
+                for i in cart.items
+                if i.offering_id == offering_id and i.purchase_option == option
+            ),
+            None,
+        )
         if existing:
             self._check_quantity(existing.quantity + quantity)
             existing.quantity += quantity
         else:
-            cart.items.append(self._new_item(offering, quantity))
+            cart.items.append(self._new_item(offering, quantity, option))
         cart.last_update = self.clock()
         self.repo.save(cart)
         return _cart(cart)
@@ -142,12 +158,34 @@ class CartService:
             raise BadRequestError(f"quantity must be between 1 and {MAX_QUANTITY}")
 
     @staticmethod
-    def _new_item(offering, quantity: int) -> models.CartItem:
+    def _purchase_option(offering, requested: str | None) -> str | None:
+        """The option to price the item with; None when the offering has no options."""
+        options = {
+            p.purchase_option
+            for p in offering.product_offering_price
+            if p.purchase_option
+        }
+        if not options:
+            if requested:
+                raise BadRequestError(
+                    f"ProductOffering {offering.id} has no purchase options"
+                )
+            return None
+        option = requested or DEFAULT_OPTION
+        if option not in options:
+            raise BadRequestError(
+                f"purchaseOption must be one of {', '.join(sorted(options))}"
+            )
+        return option
+
+    @staticmethod
+    def _new_item(offering, quantity: int, option: str | None) -> models.CartItem:
         return models.CartItem(
             id=f"CI-{secrets.token_hex(4)}",
             offering_id=offering.id,
             offering_name=offering.name,
             quantity=quantity,
+            purchase_option=option,
             prices=[
                 models.CartItemPrice(
                     name=p.name,
@@ -157,6 +195,6 @@ class CartService:
                     amount=p.price.value,
                 )
                 for p in offering.product_offering_price
-                if p.price is not None
+                if p.price is not None and p.purchase_option in (None, option)
             ],
         )

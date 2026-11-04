@@ -38,6 +38,7 @@ class CartItem:
     status: str
     quantity: int
     product_offering: Ref
+    purchase_option: str | None = None
     item_price: list[CartPrice] = field(default_factory=list)
     item_total_price: list[CartPrice] = field(default_factory=list)
 

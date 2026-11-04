@@ -86,6 +86,9 @@ class ProductOfferingPrice(Lifecycle):
     recurring_charge_period_length: int | None = None
     uom_amount: Decimal | None = None
     uom_units: str | None = None
+    # Project extension: set when the price applies to one purchase option only
+    # (own, tradeIn, finance); empty means it applies to every option.
+    purchase_option: str | None = None
 
 
 @dataclass(kw_only=True)
@@ -100,7 +103,9 @@ class ProductOffering(Lifecycle):
     specification_id: str | None = None
     category_ids: list[str] = field(default_factory=list)
     price_ids: list[str] = field(default_factory=list)
+    bundled_ids: list[str] = field(default_factory=list)
 
     specification: ProductSpecification | None = field(default=None, metadata=TRANSIENT)
+    bundled: list["ProductOffering"] = field(default_factory=list, metadata=TRANSIENT)
     categories: list[Category] = field(default_factory=list, metadata=TRANSIENT)
     prices: list[ProductOfferingPrice] = field(default_factory=list, metadata=TRANSIENT)

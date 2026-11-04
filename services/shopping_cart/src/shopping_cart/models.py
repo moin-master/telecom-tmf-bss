@@ -25,6 +25,7 @@ class CartItem:
     quantity: int
     action: str = "add"
     status: str = "active"
+    purchase_option: str | None = None
     prices: list[CartItemPrice] = field(default_factory=list)
 
 

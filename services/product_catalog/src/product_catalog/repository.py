@@ -50,9 +50,6 @@ class CatalogRepository:
                 {"_id": row.id}, to_doc(row), upsert=True
             )
 
-    def is_empty(self) -> bool:
-        return self.db[Catalog.collection].count_documents({}) == 0
-
     def get_offering(self, id: str) -> ProductOffering | None:
         row = self._one(ProductOffering, id)
         if row is not None:
@@ -116,6 +113,9 @@ class CatalogRepository:
         row.specification = self._one(ProductSpecification, row.specification_id)
         row.categories = [
             c for c in (self._one(Category, i) for i in row.category_ids) if c
+        ]
+        row.bundled = [
+            b for b in (self._one(ProductOffering, i) for i in row.bundled_ids) if b
         ]
         row.prices = sorted(
             (p for p in (self._one(ProductOfferingPrice, i) for i in row.price_ids) if p),

@@ -48,6 +48,7 @@ class CartItem:
     status: str
     quantity: int
     product_offering: ProductOfferingRef
+    purchase_option: str | None
     item_price: list[CartPrice]
     item_total_price: list[CartPrice]
 
@@ -86,9 +87,12 @@ class Mutation:
         cart_id: str,
         product_offering_id: str,
         quantity: int = 1,
+        purchase_option: str | None = None,
     ) -> ShoppingCart:
         return _convert(
-            _service(info).add_item(cart_id, product_offering_id, quantity)
+            _service(info).add_item(
+                cart_id, product_offering_id, quantity, purchase_option
+            )
         )
 
     @strawberry.mutation
