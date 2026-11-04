@@ -446,6 +446,7 @@ dependencies = [
     { name = "fastapi" },
     { name = "mongita" },
     { name = "product-catalog" },
+    { name = "resource-inventory" },
     { name = "strawberry-graphql", extra = ["fastapi"] },
 ]
 
@@ -455,6 +456,7 @@ requires-dist = [
     { name = "fastapi", specifier = ">=0.115" },
     { name = "mongita", specifier = ">=1.2" },
     { name = "product-catalog", editable = "services/product_catalog" },
+    { name = "resource-inventory", editable = "services/resource_inventory" },
     { name = "strawberry-graphql", extras = ["fastapi"], specifier = ">=0.240" },
 ]
 

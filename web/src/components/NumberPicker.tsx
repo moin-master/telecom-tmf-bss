@@ -3,7 +3,9 @@ import { useAvailableNumbers } from '../hooks/useAvailableNumbers'
 import { phoneNumber } from '../lib/format'
 import { ErrorState } from './StateViews'
 
-type Props = { offerName: string; picked: string | null; onPick: (value: string) => void }
+export type PickedNumber = { id: string; value: string }
+
+type Props = { offerName: string; picked: string | null; onPick: (number: PickedNumber) => void }
 
 // Free numbers from the resource inventory, filtered by the digits typed.
 export function NumberPicker({ offerName, picked, onPick }: Props) {
@@ -43,8 +45,8 @@ export function NumberPicker({ offerName, picked, onPick }: Props) {
                 <button
                   type="button"
                   className="picker__num"
-                  aria-pressed={picked === n.value}
-                  onClick={() => onPick(n.value)}
+                  aria-pressed={picked === n.id}
+                  onClick={() => onPick({ id: n.id, value: n.value })}
                 >
                   {phoneNumber(n.value)}
                 </button>

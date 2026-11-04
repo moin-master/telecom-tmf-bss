@@ -51,6 +51,14 @@ class ResourceFilter:
     search: str | None = None
 
 
+@strawberry.input
+class ResourcePatch:
+    """Merge-patch: a field left out stays as it is."""
+
+    allocation_status: str | None = None
+    usage_state: str | None = None
+
+
 def _service(info: strawberry.Info):
     return info.context["resources"]
 
@@ -70,4 +78,11 @@ class Query:
         return _convert(rows)
 
 
-schema = strawberry.Schema(query=Query)
+@strawberry.type
+class Mutation:
+    @strawberry.mutation
+    def patch_resource(self, info: strawberry.Info, id: str, patch: ResourcePatch) -> LogicalResource:
+        return _convert(_service(info).patch_resource(id, patch.allocation_status, patch.usage_state))
+
+
+schema = strawberry.Schema(query=Query, mutation=Mutation)

@@ -14,6 +14,9 @@ class ResourceRepository:
                 {"_id": row.id}, to_doc(row), upsert=True
             )
 
+    def save(self, row: LogicalResource) -> None:
+        self.save_all([row])
+
     def is_empty(self) -> bool:
         return self.db[LogicalResource.collection].count_documents({}) == 0
 

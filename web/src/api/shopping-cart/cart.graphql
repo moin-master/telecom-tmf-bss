@@ -7,6 +7,15 @@ fragment CartItemFields on CartItem {
     id
     name
   }
+  product {
+    productCharacteristic {
+      name
+      value
+    }
+    realizingResource {
+      id
+    }
+  }
   productOffering {
     id
     name
@@ -141,6 +150,12 @@ mutation UpdateCartItem(
 
 mutation RemoveCartItem($cartId: String!, $cartItemId: String!) {
   removeCartItem(cartId: $cartId, cartItemId: $cartItemId) {
+    ...CartFields
+  }
+}
+
+mutation ConfigureCartItem($cartId: String!, $cartItemId: String!, $numberResourceId: String!) {
+  configureCartItem(cartId: $cartId, cartItemId: $cartItemId, numberResourceId: $numberResourceId) {
     ...CartFields
   }
 }

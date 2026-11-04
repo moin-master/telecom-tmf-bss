@@ -2,9 +2,11 @@ import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { BundleTree } from '../components/BundleTree'
 import { ConfigPanel } from '../components/ConfigPanel'
+import type { PickedNumber } from '../components/NumberPicker'
 import { ErrorState, StateCard } from '../components/StateViews'
 import { useCart } from '../hooks/useCart'
 import { useOffer } from '../hooks/useOffers'
+import { apiError } from '../lib/errors'
 import { amount, isCredit } from '../lib/cart'
 import { bundleParts, firstToConfigure, needsNumber, type BundlePart } from '../lib/configure'
 import { phoneNumber } from '../lib/format'
@@ -17,10 +19,12 @@ const backToCart = (
 
 export function Configure() {
   const { itemId } = useParams()
-  const { cart, loading } = useCart()
+  const { cart, loading, configure, busy } = useCart()
   const item = cart?.cartItem.find((i) => i.id === itemId)
   const offer = useOffer(item?.productOffering.id ?? '')
-  const [picked, setPicked] = useState<string | null>(null)
+  const [picked, setPicked] = useState<PickedNumber | null>(null)
+  const [changing, setChanging] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
   if (loading || (item && offer.isPending)) {
@@ -57,6 +61,22 @@ export function Configure() {
     )
   }
 
+  // The number reserved for this line is kept on the cart item (TMF663 product characteristic).
+  const saved = item.product?.productCharacteristic.find((c) => c.name === 'TEL_MSISDN')?.value ?? null
+
+  async function reserve() {
+    if (!picked) return
+    setError(null)
+    try {
+      await configure(item!.id, picked.id)
+      setChanging(false)
+    } catch (e) {
+      const err = apiError(e)
+      setError(err.code === 'Conflict' ? 'That number was just taken. Pick another one.' : err.message)
+    }
+    setPicked(null)
+  }
+
   const credits = item.itemTotalPrice.filter(isCredit).map((p) => ({ name: p.name, amount: amount(p) }))
   const parts = data.isBundle ? bundleParts(data) : []
   const selected =
@@ -65,8 +85,8 @@ export function Configure() {
   const active = selected ?? { id: data.id, name: data.name, role: 'sim' }
   const status = (part: BundlePart) =>
     part.role === 'sim' ? (
-      <span className={picked ? 'node__state is-set' : 'node__state'}>
-        {picked ? `Number ${phoneNumber(picked)}` : 'Needs a number'}
+      <span className={saved ? 'node__state is-set' : 'node__state'}>
+        {saved ? `Reserved ${phoneNumber(saved)}` : 'Needs a number'}
       </span>
     ) : (
       <span className="node__none">Nothing to configure</span>
@@ -86,8 +106,18 @@ export function Configure() {
       <ConfigPanel
         part={active}
         bundleName={selected ? data.name : undefined}
+        saved={saved}
         picked={picked}
         onPick={setPicked}
+        onReserve={reserve}
+        changing={changing}
+        onChange={(value) => {
+          setChanging(value)
+          setPicked(null)
+          setError(null)
+        }}
+        reserving={busy}
+        error={error}
       />
     </div>
   )

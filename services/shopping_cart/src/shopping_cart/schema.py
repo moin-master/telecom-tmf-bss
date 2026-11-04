@@ -41,6 +41,27 @@ class ProductOfferingRef:
     name: str
 
 
+@_for(dto.ProductCharacteristic)
+@strawberry.type
+class ProductCharacteristic:
+    name: str
+    value: str
+
+
+@_for(dto.ResourceRef)
+@strawberry.type
+class ResourceRef:
+    id: str
+    name: str
+
+
+@_for(dto.Product)
+@strawberry.type
+class Product:
+    product_characteristic: list[ProductCharacteristic]
+    realizing_resource: list[ResourceRef]
+
+
 @_for(dto.CartItem)
 @strawberry.type
 class CartItem:
@@ -52,6 +73,7 @@ class CartItem:
     purchase_option: str | None
     contract_months: int | None
     launch_offer: ProductOfferingRef | None
+    product: Product | None
     item_price: list[CartPrice]
     item_total_price: list[CartPrice]
     item_subtotal: list[CartPrice]
@@ -150,6 +172,15 @@ class Mutation:
         self, info: strawberry.Info, cart_id: str, cart_item_id: str
     ) -> ShoppingCart:
         return _convert(_service(info).remove_item(cart_id, cart_item_id))
+
+    @strawberry.mutation
+    def configure_cart_item(
+        self, info: strawberry.Info, cart_id: str, cart_item_id: str, number_resource_id: str
+    ) -> ShoppingCart:
+        """Reserves the chosen phone number for a line that has a SIM."""
+        return _convert(
+            _service(info).configure_item(cart_id, cart_item_id, number_resource_id)
+        )
 
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)

@@ -34,6 +34,9 @@ class CartItem:
     contract_months: int | None = None
     launch_offer_id: str | None = None
     launch_offer_name: str | None = None
+    # The reserved phone number (TMF639 resource) of a line that has a SIM.
+    number: str | None = None
+    number_resource_id: str | None = None
     prices: list[CartItemPrice] = field(default_factory=list)
 
 

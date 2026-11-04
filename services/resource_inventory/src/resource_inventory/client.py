@@ -44,3 +44,11 @@ class ResourceInventoryClient:
         search: str | None = None,
     ) -> list[LogicalResource]:
         return _service().list_resources(allocation_status, usage_state, search)
+
+    def reserve_resource(self, id: str) -> LogicalResource:
+        """Raises Conflict when the number is not available."""
+        return _service().patch_resource(id, "reserved", "busy")
+
+    def release_resource(self, id: str) -> LogicalResource:
+        """Raises Conflict when the number is not reserved."""
+        return _service().patch_resource(id, "available", "idle")
