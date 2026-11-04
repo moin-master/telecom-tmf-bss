@@ -10,7 +10,5 @@ database = mongita_database("product_catalog", _DEFAULT_DIR)
 
 
 def init_db() -> None:
-    """Load seed data into an empty database."""
-    repo = CatalogRepository(database)
-    if repo.is_empty():
-        seed.load(repo)
+    """Load the seed data. Saving replaces by id, so a restart picks up new seed rows."""
+    seed.load(CatalogRepository(database))

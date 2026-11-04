@@ -66,6 +66,7 @@ class ProductOfferingPrice:
     lifecycle_status: str
     valid_for: TimePeriod
     last_update: datetime
+    purchase_option: str | None = None
 
 
 @dataclass(frozen=True)
@@ -82,6 +83,7 @@ class ProductOffering:
     category: list[Ref] = field(default_factory=list)
     product_specification: ProductSpecification | None = None
     product_offering_price: list[ProductOfferingPrice] = field(default_factory=list)
+    bundled_product_offering: list[Ref] = field(default_factory=list)
 
 
 @dataclass(frozen=True)

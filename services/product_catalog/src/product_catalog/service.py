@@ -72,6 +72,7 @@ def _price(row: models.ProductOfferingPrice) -> dto.ProductOfferingPrice:
         lifecycle_status=row.lifecycle_status,
         valid_for=_period(row),
         last_update=row.last_update,
+        purchase_option=row.purchase_option,
     )
 
 
@@ -159,6 +160,7 @@ class CatalogService:
             product_offering_price=[
                 _price(p) for p in row.prices if _is_visible(p, at)
             ],
+            bundled_product_offering=_visible_refs(row.bundled, at),
         )
 
     def _category(self, row: models.Category, at: datetime) -> dto.Category:

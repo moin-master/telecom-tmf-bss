@@ -79,6 +79,7 @@ class ProductOfferingPrice:
     lifecycle_status: str
     valid_for: TimePeriod
     last_update: datetime
+    purchase_option: str | None
 
 
 @_for(dto.ProductOffering)
@@ -96,6 +97,7 @@ class ProductOffering:
     category: list[Ref]
     product_specification: ProductSpecification | None
     product_offering_price: list[ProductOfferingPrice]
+    bundled_product_offering: list[Ref]
 
 
 @_for(dto.Category)

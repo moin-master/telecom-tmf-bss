@@ -74,5 +74,6 @@ Alternatives considered: a single-package modular monolith (simplest, but servic
 | Money and time | `decimal.Decimal` for amounts, timezone-aware `datetime` (UTC) for timestamps |
 | Billing cycle trigger | an on-demand mutation (for example `runBillingCycle`) before any scheduler |
 | Storage | one Mongita database folder per service so data survives restarts; seed data in a Python seed module per service |
+| Bundles and purchase options | a bundle is a ProductOffering with `isBundle` and `bundledProductOffering` (the components stay normal offerings). Own it, trade-in and finance are alternative ProductOfferingPrices tagged with `purchaseOption` (own, tradeIn, finance), a project extension that TMF620 does not define; untagged prices apply to every option. The cart prices an item with one option (default own). |
 | Polymorphism (`@type`), reference objects (`href`), free-form values, PATCH semantics | one agreed policy per issue, written down once |
 | Scope creep | fixed slice order below |
