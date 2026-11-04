@@ -1,48 +1,56 @@
+fragment CartItemFields on CartItem {
+  id
+  quantity
+  purchaseOption
+  contractMonths
+  launchOffer {
+    id
+    name
+  }
+  productOffering {
+    id
+    name
+  }
+  itemPrice {
+    name
+    priceType
+    recurringChargePeriod
+    price {
+      dutyFreeAmount {
+        unit
+        value
+      }
+    }
+  }
+  itemSubtotal {
+    name
+    priceType
+    recurringChargePeriod
+    price {
+      taxIncludedAmount {
+        unit
+        value
+      }
+    }
+  }
+  itemTotalPrice {
+    name
+    priceType
+    recurringChargePeriod
+    price {
+      taxIncludedAmount {
+        unit
+        value
+      }
+    }
+  }
+}
+
 fragment CartFields on ShoppingCart {
   id
   lastUpdate
   cartItem {
-    id
-    quantity
-    purchaseOption
-    contractMonths
-    productOffering {
-      id
-      name
-    }
-    itemPrice {
-      name
-      priceType
-      recurringChargePeriod
-      price {
-        dutyFreeAmount {
-          unit
-          value
-        }
-      }
-    }
-    itemSubtotal {
-      name
-      priceType
-      recurringChargePeriod
-      price {
-        taxIncludedAmount {
-          unit
-          value
-        }
-      }
-    }
-    itemTotalPrice {
-      name
-      priceType
-      recurringChargePeriod
-      price {
-        taxIncludedAmount {
-          unit
-          value
-        }
-      }
-    }
+    ...CartItemFields
   }
   cartTotalPrice {
     name
@@ -54,6 +62,24 @@ fragment CartFields on ShoppingCart {
         value
       }
     }
+  }
+}
+
+query QuoteCartItem(
+  $productOfferingId: String!
+  $quantity: Int!
+  $purchaseOption: String
+  $contractMonths: Int
+  $launchOffer: String
+) {
+  quoteCartItem(
+    productOfferingId: $productOfferingId
+    quantity: $quantity
+    purchaseOption: $purchaseOption
+    contractMonths: $contractMonths
+    launchOffer: $launchOffer
+  ) {
+    ...CartItemFields
   }
 }
 
@@ -80,6 +106,26 @@ mutation AddCartItem(
   addCartItem(
     cartId: $cartId
     productOfferingId: $productOfferingId
+    quantity: $quantity
+    purchaseOption: $purchaseOption
+    contractMonths: $contractMonths
+    launchOffer: $launchOffer
+  ) {
+    ...CartFields
+  }
+}
+
+mutation UpdateCartItem(
+  $cartId: String!
+  $cartItemId: String!
+  $quantity: Int
+  $purchaseOption: String
+  $contractMonths: Int
+  $launchOffer: String
+) {
+  updateCartItem(
+    cartId: $cartId
+    cartItemId: $cartItemId
     quantity: $quantity
     purchaseOption: $purchaseOption
     contractMonths: $contractMonths

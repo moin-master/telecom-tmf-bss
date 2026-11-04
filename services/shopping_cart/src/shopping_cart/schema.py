@@ -50,6 +50,7 @@ class CartItem:
     product_offering: ProductOfferingRef
     purchase_option: str | None
     contract_months: int | None
+    launch_offer: ProductOfferingRef | None
     item_price: list[CartPrice]
     item_total_price: list[CartPrice]
     item_subtotal: list[CartPrice]
@@ -75,6 +76,23 @@ class Query:
     def shopping_cart(self, info: strawberry.Info, id: str) -> ShoppingCart:
         return _convert(_service(info).get_cart(id))
 
+    @strawberry.field
+    def quote_cart_item(
+        self,
+        info: strawberry.Info,
+        product_offering_id: str,
+        quantity: int = 1,
+        purchase_option: str | None = None,
+        contract_months: int | None = None,
+        launch_offer: str | None = None,
+    ) -> CartItem:
+        """What a line would cost with these choices. Nothing is saved."""
+        return _convert(
+            _service(info).quote_item(
+                product_offering_id, quantity, purchase_option, contract_months, launch_offer
+            )
+        )
+
 
 @strawberry.type
 class Mutation:
@@ -97,6 +115,28 @@ class Mutation:
             _service(info).add_item(
                 cart_id,
                 product_offering_id,
+                quantity,
+                purchase_option,
+                contract_months,
+                launch_offer,
+            )
+        )
+
+    @strawberry.mutation
+    def update_cart_item(
+        self,
+        info: strawberry.Info,
+        cart_id: str,
+        cart_item_id: str,
+        quantity: int | None = None,
+        purchase_option: str | None = None,
+        contract_months: int | None = None,
+        launch_offer: str | None = None,
+    ) -> ShoppingCart:
+        return _convert(
+            _service(info).update_item(
+                cart_id,
+                cart_item_id,
                 quantity,
                 purchase_option,
                 contract_months,

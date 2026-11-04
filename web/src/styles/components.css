@@ -763,3 +763,9 @@
 .deals__notes b {
   color: var(--text);
 }
+.offer__split small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}

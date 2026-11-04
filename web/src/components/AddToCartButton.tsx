@@ -11,12 +11,29 @@ type Props = {
   // Optional extras ticked by the shopper; each is added as its own line with the same quantity.
   extras?: { id: string; name: string }[]
   sellable?: boolean
+  // Replaces the default "add" with another action, such as updating a cart line.
+  run?: () => Promise<void>
+  label?: string
+  doneLabel?: string
+  disabled?: boolean
 }
 
-export function AddToCartButton({ offering, quantity = 1, choice, extras = [], sellable = true }: Props) {
+export function AddToCartButton({
+  offering,
+  quantity = 1,
+  choice,
+  extras = [],
+  sellable = true,
+  run,
+  label = 'Add to cart',
+  doneLabel = 'Added ✓',
+  disabled = false,
+}: Props) {
   const { add } = useCart()
   const [pending, setPending] = useState(false)
   const [done, setDone] = useState(false)
+  // The confirmation is fixed when the shopper clicks, because the panel may switch from add to update right after.
+  const [doneText, setDoneText] = useState(doneLabel)
   const [burst, setBurst] = useState(0)
   const [error, setError] = useState<string | null>(null)
 
@@ -30,7 +47,11 @@ export function AddToCartButton({ offering, quantity = 1, choice, extras = [], s
     setError(null)
     setPending(true)
     try {
-      await add(offering, quantity, choice)
+      if (run) {
+        await run()
+      } else {
+        await add(offering, quantity, choice)
+      }
       for (const extra of extras) {
         try {
           await add(extra, quantity)
@@ -39,6 +60,7 @@ export function AddToCartButton({ offering, quantity = 1, choice, extras = [], s
         }
       }
       setBurst((n) => n + 1)
+      setDoneText(doneLabel)
       setDone(true)
     } catch (e) {
       setError(apiError(e).message)
@@ -53,9 +75,9 @@ export function AddToCartButton({ offering, quantity = 1, choice, extras = [], s
         type="button"
         className={`btn${done ? ' is-done' : ''}`}
         onClick={onClick}
-        disabled={!sellable || pending}
+        disabled={!sellable || pending || disabled}
       >
-        {!sellable ? 'Not for sale' : pending ? 'Adding…' : done ? 'Added ✓' : 'Add to cart'}
+        {!sellable ? 'Not for sale' : pending ? (run ? 'Saving…' : 'Adding…') : done ? doneText : label}
       </button>
       <Burst n={burst} />
       {error && (

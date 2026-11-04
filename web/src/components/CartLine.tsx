@@ -1,46 +1,11 @@
 import { Link } from 'react-router-dom'
 import type { CartFieldsFragment } from '../api/generated/shopping-cart/graphql'
 import { useOffer } from '../hooks/useOffers'
-import { amount, isCredit, totalLabel } from '../lib/cart'
-import { perLabel } from '../lib/format'
 import { optionLabel } from '../lib/purchase'
 import { offerEmoji } from '../lib/theme'
+import { Charges } from './Charges'
 
 type Item = CartFieldsFragment['cartItem'][number]
-
-function Charges({ title, hint, rows, totals }: {
-  title: string
-  hint: string
-  rows: Item['itemTotalPrice']
-  totals: Item['itemSubtotal']
-}) {
-  if (rows.length === 0) return null
-  return (
-    <section className="charges" aria-label={title}>
-      <h3 className="charges__title">{title}</h3>
-      <p className="charges__hint">{hint}</p>
-      <ul className="charges__rows">
-        {rows.map((p, i) => (
-          <li key={i} className={isCredit(p) ? 'is-credit' : undefined}>
-            <span>{p.name}</span>
-            <b>
-              {amount(p)}
-              {perLabel(p.recurringChargePeriod)}
-            </b>
-          </li>
-        ))}
-      </ul>
-      <dl className="charges__totals">
-        {totals.map((t, i) => (
-          <div key={i}>
-            <dt>{totalLabel(t)}</dt>
-            <dd>{amount(t)}</dd>
-          </div>
-        ))}
-      </dl>
-    </section>
-  )
-}
 
 // One cart line: what it is, what it includes, what is paid on the first bill and what every month.
 export function CartLine({ item, busy, onRemove }: { item: Item; busy: boolean; onRemove: () => void }) {

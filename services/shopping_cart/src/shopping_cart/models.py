@@ -31,6 +31,7 @@ class CartItem:
     is_bundle: bool = False
     contract_months: int | None = None
     launch_offer_id: str | None = None
+    launch_offer_name: str | None = None
     prices: list[CartItemPrice] = field(default_factory=list)
 
 

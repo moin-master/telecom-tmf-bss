@@ -32,14 +32,3 @@ export function optionsOf(prices: Price[]): typeof OPTIONS {
 export function pricesFor<T extends Price>(prices: T[], option?: PurchaseOption): T[] {
   return prices.filter((p) => p.price && (!p.purchaseOption || p.purchaseOption === option))
 }
-
-// Quick preview for the card: due today and every month. The cart shows the totals the backend calculates.
-export function preview(prices: Price[]): { unit: string; today: string; monthly: string } | null {
-  const priced = prices.filter((p) => p.price)
-  if (priced.length === 0) return null
-  const cents = (v: string) => Math.round(Number(v) * 100)
-  const sum = (type: string) =>
-    priced.filter((p) => (type === 'recurring') === (p.priceType === 'recurring')).reduce((n, p) => n + cents(p.price!.value), 0)
-  const fixed = (n: number) => (n / 100).toFixed(2)
-  return { unit: priced[0].price!.unit, today: fixed(sum('oneTime')), monthly: fixed(sum('recurring')) }
-}

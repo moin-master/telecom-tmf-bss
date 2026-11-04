@@ -49,6 +49,11 @@ def _item(row: models.CartItem) -> dto.CartItem:
         product_offering=dto.Ref(row.offering_id, row.offering_name),
         purchase_option=row.purchase_option,
         contract_months=row.contract_months,
+        launch_offer=(
+            dto.Ref(row.launch_offer_id, row.launch_offer_name or row.launch_offer_id)
+            if row.launch_offer_id
+            else None
+        ),
         item_price=[
             _cart_price(p.name, p.price_type, p.recurring_period, p.unit, p.amount)
             for p in row.prices
@@ -169,34 +174,64 @@ class CartService:
         contract_months: int | None = None,
         launch_offer: str | None = None,
     ) -> dto.ShoppingCart:
-        self._check_quantity(quantity)
         cart = self._cart_row(cart_id)
-        # Raises NotFound for offerings that are retired, expired or unknown.
-        offering = self.catalog.get_offering(offering_id)
-        if not offering.is_sellable:
-            raise BadRequestError(f"ProductOffering {offering_id} is not sellable")
-
-        option = self._purchase_option(offering, purchase_option)
-        contract = self._contract(offering, option, contract_months)
-        launch = self._launch_offer(offering, launch_offer)
-        existing = next(
-            (
-                i
-                for i in cart.items
-                if i.offering_id == offering_id
-                and i.purchase_option == option
-                and i.contract_months == contract
-                and i.launch_offer_id == (launch.id if launch else None)
-            ),
-            None,
+        offering, option, contract, launch = self._resolve(
+            offering_id, quantity, purchase_option, contract_months, launch_offer
         )
+        existing = self._twin(cart, None, offering_id, option, contract, launch)
         if existing:
             self._check_quantity(existing.quantity + quantity)
             existing.quantity += quantity
         else:
             cart.items.append(self._new_item(offering, quantity, option, contract, launch))
-        if offering.is_bundle and cart.bundle_discount is None:
-            cart.bundle_discount = self._bundle_discount(offering)
+        self._sync_bundle_discount(cart, offering)
+        cart.last_update = self.clock()
+        self.repo.save(cart)
+        return _cart(cart)
+
+    def quote_item(
+        self,
+        offering_id: str,
+        quantity: int,
+        purchase_option: str | None = None,
+        contract_months: int | None = None,
+        launch_offer: str | None = None,
+    ) -> dto.CartItem:
+        """Prices a choice exactly as the cart would, without saving anything."""
+        offering, option, contract, launch = self._resolve(
+            offering_id, quantity, purchase_option, contract_months, launch_offer
+        )
+        return _item(self._new_item(offering, quantity, option, contract, launch))
+
+    def update_item(
+        self,
+        cart_id: str,
+        item_id: str,
+        quantity: int | None = None,
+        purchase_option: str | None = None,
+        contract_months: int | None = None,
+        launch_offer: str | None = None,
+    ) -> dto.ShoppingCart:
+        """Re-prices a cart line with new choices: contract, waiver and launch offer are added or dropped."""
+        cart = self._cart_row(cart_id)
+        item = next((i for i in cart.items if i.id == item_id), None)
+        if item is None:
+            raise NotFoundError("CartItem", item_id)
+        quantity = item.quantity if quantity is None else quantity
+        offering, option, contract, launch = self._resolve(
+            item.offering_id, quantity, purchase_option, contract_months, launch_offer
+        )
+        twin = self._twin(cart, item, item.offering_id, option, contract, launch)
+        if twin:
+            # The new choices match another line of the same offering, so the two become one.
+            self._check_quantity(twin.quantity + quantity)
+            twin.quantity += quantity
+            cart.items.remove(item)
+        else:
+            new = self._new_item(offering, quantity, option, contract, launch)
+            new.id, new.status, new.action = item.id, item.status, item.action
+            cart.items[cart.items.index(item)] = new
+        self._sync_bundle_discount(cart, offering)
         cart.last_update = self.clock()
         self.repo.save(cart)
         return _cart(cart)
@@ -212,6 +247,41 @@ class CartService:
         cart.last_update = self.clock()
         self.repo.save(cart)
         return _cart(cart)
+
+    def _resolve(self, offering_id, quantity, purchase_option, contract_months, launch_offer):
+        """Validates a choice against the catalog; returns the offering and the settled choices."""
+        self._check_quantity(quantity)
+        # Raises NotFound for offerings that are retired, expired or unknown.
+        offering = self.catalog.get_offering(offering_id)
+        if not offering.is_sellable:
+            raise BadRequestError(f"ProductOffering {offering_id} is not sellable")
+        option = self._purchase_option(offering, purchase_option)
+        contract = self._contract(offering, option, contract_months)
+        launch = self._launch_offer(offering, launch_offer)
+        return offering, option, contract, launch
+
+    @staticmethod
+    def _twin(cart, skip, offering_id, option, contract, launch):
+        """Another line with the same offering and choices, if there is one."""
+        return next(
+            (
+                i
+                for i in cart.items
+                if i is not skip
+                and i.offering_id == offering_id
+                and i.purchase_option == option
+                and i.contract_months == contract
+                and i.launch_offer_id == (launch.id if launch else None)
+            ),
+            None,
+        )
+
+    def _sync_bundle_discount(self, cart, offering: ProductOffering) -> None:
+        """The double bundle discount is copied in when the cart first holds a bundle and dropped below two."""
+        if _bundle_count(cart.items) < 2:
+            cart.bundle_discount = None
+        elif offering.is_bundle and cart.bundle_discount is None:
+            cart.bundle_discount = self._bundle_discount(offering)
 
     def _cart_row(self, id: str) -> models.ShoppingCart:
         row = self.repo.get(id)
@@ -324,6 +394,7 @@ class CartService:
             is_bundle=offering.is_bundle,
             contract_months=contract,
             launch_offer_id=launch.id if launch else None,
+            launch_offer_name=launch.name if launch else None,
             prices=prices,
         )
 
