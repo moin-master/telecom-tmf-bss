@@ -23,6 +23,7 @@ class CartPrice:
     price_type: str
     recurring_charge_period: str | None
     price: Price
+    regular_price: Money | None = None
 
 
 @dataclass(frozen=True)

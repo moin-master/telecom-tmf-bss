@@ -1,6 +1,6 @@
 import type { CartItemFieldsFragment } from '../api/generated/shopping-cart/graphql'
 import { amount, isCredit, totalLabel } from '../lib/cart'
-import { perLabel } from '../lib/format'
+import { LineAmount } from './LineAmount'
 
 type Props = {
   title: string
@@ -20,13 +20,13 @@ export function Charges({ title, hint, rows, totals }: Props) {
         {rows.map((p, i) => (
           <li key={i} className={isCredit(p) ? 'is-credit' : undefined}>
             <span>{p.name}</span>
-            <b>
-              {amount(p)}
-              {perLabel(p.recurringChargePeriod)}
-            </b>
+            <LineAmount line={p} />
           </li>
         ))}
       </ul>
+      {rows.some((p) => p.regularPrice) && (
+        <p className="charges__foot">The struck-out price is the regular price. You pay the price next to it.</p>
+      )}
       <dl className="charges__totals">
         {totals.map((t, i) => (
           <div key={i}>

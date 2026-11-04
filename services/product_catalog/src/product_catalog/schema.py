@@ -104,6 +104,7 @@ class ProductOfferingPrice:
     last_update: datetime
     purchase_option: str | None
     percentage: Decimal | None
+    regular_price: Money | None
 
 
 @_for(dto.ProductOffering)

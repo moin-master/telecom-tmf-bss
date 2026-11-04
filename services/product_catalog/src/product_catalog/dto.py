@@ -88,6 +88,7 @@ class ProductOfferingPrice:
     last_update: datetime
     purchase_option: str | None = None
     percentage: Decimal | None = None
+    regular_price: Money | None = None
 
 
 @dataclass(frozen=True)

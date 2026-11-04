@@ -74,6 +74,11 @@ def _price(row: models.ProductOfferingPrice) -> dto.ProductOfferingPrice:
         last_update=row.last_update,
         purchase_option=row.purchase_option,
         percentage=row.percentage,
+        regular_price=(
+            dto.Money(row.price_unit, row.regular_value)
+            if row.regular_value is not None
+            else None
+        ),
     )
 
 

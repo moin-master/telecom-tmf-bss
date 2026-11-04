@@ -769,3 +769,23 @@
   font-size: 0.78rem;
   font-weight: 600;
 }
+
+/* ---------- regular price struck out next to the price paid ---------- */
+.amount {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: 0 0.5rem;
+}
+.amount__regular {
+  color: var(--muted);
+  font-weight: 500;
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+.charges__foot {
+  margin-top: 0.5rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+}

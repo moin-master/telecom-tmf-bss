@@ -34,10 +34,18 @@ def _recurring_period(price: ProductOfferingPrice) -> str | None:
     return period if length == 1 else f"{length} {period}"
 
 
-def _cart_price(name, price_type, period, unit, amount: Decimal) -> dto.CartPrice:
+def _cart_price(
+    name, price_type, period, unit, amount: Decimal, regular: Decimal | None = None
+) -> dto.CartPrice:
     # No tax yet, so both amounts are equal.
     money = dto.Money(unit, amount)
-    return dto.CartPrice(name, price_type, period, dto.Price(money, money))
+    return dto.CartPrice(
+        name,
+        price_type,
+        period,
+        dto.Price(money, money),
+        dto.Money(unit, regular) if regular is not None else None,
+    )
 
 
 def _item(row: models.CartItem) -> dto.CartItem:
@@ -55,12 +63,19 @@ def _item(row: models.CartItem) -> dto.CartItem:
             else None
         ),
         item_price=[
-            _cart_price(p.name, p.price_type, p.recurring_period, p.unit, p.amount)
+            _cart_price(
+                p.name, p.price_type, p.recurring_period, p.unit, p.amount, p.regular_amount
+            )
             for p in row.prices
         ],
         item_total_price=[
             _cart_price(
-                p.name, p.price_type, p.recurring_period, p.unit, p.amount * row.quantity
+                p.name,
+                p.price_type,
+                p.recurring_period,
+                p.unit,
+                p.amount * row.quantity,
+                p.regular_amount * row.quantity if p.regular_amount is not None else None,
             )
             for p in row.prices
         ],
@@ -377,6 +392,7 @@ class CartService:
                 recurring_period=_recurring_period(p),
                 unit=p.price.unit,
                 amount=p.price.value,
+                regular_amount=p.regular_price.value if p.regular_price else None,
             )
             for p in offering.product_offering_price
             if p.price is not None and p.purchase_option in (None, option)
