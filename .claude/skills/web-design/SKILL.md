@@ -5,7 +5,7 @@ description: Visual design rules for the web app: clean, minimal, professional, 
 
 # Web design: lemon on white and blackish gray
 
-Palette source: https://paletadecolores.org/en/colors/lemon-yellow.html (lemon yellow `#FFF700`). The storefront is called **Lemon Mobile**. The look is clean, calm and confident: neutral surfaces, generous whitespace, one bright accent used with restraint. It should feel like a serious product, not a theme.
+Palette source: https://paletadecolores.org/en/colors/lemon-yellow.html (lemon yellow `#FFF700`). The storefront is called **My Own Mobile Store Front**, short **MOM**. The wordmark is MOM in Inter 800 with the lemon highlighter underline (kept in both themes), with "My Own Mobile" beside it in muted text, hidden below 520 px. The aria-label is "My Own Mobile, home". The look is clean, calm and confident: neutral surfaces, generous whitespace, one bright accent used with restraint. It should feel like a serious product, not a theme.
 
 ## Themes: white and dark
 

@@ -7,14 +7,13 @@ export function Header() {
   return (
     <header className="site-header">
       <div className="wrap site-header__bar">
-        <Link to="/" className="brand" aria-label="Lemon Mobile, home">
-          <span className="brand__mark" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="18" height="18">
-              <path d="M8 4v16h9" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+        <Link to="/" className="brand" aria-label="My Own Mobile, home">
+          <span className="brand__word" aria-hidden="true">
+            MOM
           </span>
-          <span className="brand__word">Lemon</span>
-          <span className="brand__sub">Mobile</span>
+          <span className="brand__sub" aria-hidden="true">
+            My Own Mobile
+          </span>
         </Link>
         <nav aria-label="Main" className="nav">
           <NavLink to="/" end>

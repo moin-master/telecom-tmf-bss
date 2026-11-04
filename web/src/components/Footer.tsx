@@ -3,7 +3,10 @@ export function Footer() {
     <footer className="site-footer">
       <div className="wrap site-footer__bar">
         <p className="site-footer__brand">
-          <i aria-hidden="true" /> Lemon Mobile
+          <span className="brand__word brand__word--small" aria-hidden="true">
+            MOM
+          </span>{' '}
+          My Own Mobile Store Front. <span className="site-footer__tagline">Built around you.</span>
         </p>
         <p>
           A demo storefront built on TM Forum Open APIs. Offers and prices are read live from the catalog service.
