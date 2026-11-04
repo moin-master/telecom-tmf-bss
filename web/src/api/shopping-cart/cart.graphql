@@ -4,6 +4,7 @@ fragment CartFields on ShoppingCart {
   cartItem {
     id
     quantity
+    purchaseOption
     productOffering {
       id
       name
@@ -56,8 +57,18 @@ mutation CreateCart {
   }
 }
 
-mutation AddCartItem($cartId: String!, $productOfferingId: String!, $quantity: Int!) {
-  addCartItem(cartId: $cartId, productOfferingId: $productOfferingId, quantity: $quantity) {
+mutation AddCartItem(
+  $cartId: String!
+  $productOfferingId: String!
+  $quantity: Int!
+  $purchaseOption: String
+) {
+  addCartItem(
+    cartId: $cartId
+    productOfferingId: $productOfferingId
+    quantity: $quantity
+    purchaseOption: $purchaseOption
+  ) {
     ...CartFields
   }
 }

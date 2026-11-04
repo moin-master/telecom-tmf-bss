@@ -9,6 +9,7 @@ import {
   type CartFieldsFragment,
 } from '../api/generated/shopping-cart/graphql'
 import { apiError } from '../lib/errors'
+import type { PurchaseOption } from '../lib/purchase'
 
 const STORAGE_KEY = 'bss.cartId'
 
@@ -33,7 +34,7 @@ type CartContextValue = {
   cart: CartFieldsFragment | undefined
   count: number
   loading: boolean
-  add: (offering: { id: string; name: string }, quantity?: number) => Promise<void>
+  add: (offering: { id: string; name: string }, quantity?: number, option?: PurchaseOption) => Promise<void>
   remove: (itemId: string) => Promise<void>
   busy: boolean
   lastAdded: { name: string; n: number } | null
@@ -78,9 +79,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }
 
   const addMutation = useMutation({
-    mutationFn: async ({ offering, quantity }: { offering: { id: string; name: string }; quantity: number }) => {
+    mutationFn: async ({
+      offering,
+      quantity,
+      option,
+    }: {
+      offering: { id: string; name: string }
+      quantity: number
+      option?: PurchaseOption
+    }) => {
       const run = (id: string) =>
-        cartApi.request(AddCartItemDocument, { cartId: id, productOfferingId: offering.id, quantity })
+        cartApi.request(AddCartItemDocument, {
+          cartId: id,
+          productOfferingId: offering.id,
+          quantity,
+          purchaseOption: option ?? null,
+        })
       // The cart is created on the first add, not on page load.
       let id = cartId ?? (await startCart())
       try {
@@ -111,8 +125,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     cart,
     count: cart?.cartItem.reduce((sum, item) => sum + item.quantity, 0) ?? 0,
     loading: !!cartId && query.isLoading,
-    add: async (offering, quantity = 1) => {
-      await addMutation.mutateAsync({ offering, quantity })
+    add: async (offering, quantity = 1, option) => {
+      await addMutation.mutateAsync({ offering, quantity, option })
     },
     remove: async (itemId) => {
       await removeMutation.mutateAsync(itemId)

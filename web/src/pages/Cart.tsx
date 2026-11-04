@@ -4,6 +4,7 @@ import { StateCard } from '../components/StateViews'
 import { useCart } from '../hooks/useCart'
 import { apiError } from '../lib/errors'
 import { money, perLabel } from '../lib/format'
+import { optionLabel } from '../lib/purchase'
 import { offerEmoji } from '../lib/theme'
 
 export function Cart() {
@@ -60,6 +61,7 @@ export function Cart() {
                 <Link to={`/offers/${item.productOffering.id}`} className="line__name">
                   {item.productOffering.name}
                 </Link>
+                {item.purchaseOption && <span className="line__option">{optionLabel(item.purchaseOption)}</span>}
                 <ul className="line__prices">
                   {item.itemPrice.map((p, i) => (
                     <li key={i}>

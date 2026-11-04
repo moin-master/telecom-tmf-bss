@@ -35,13 +35,16 @@ class CatalogRepository:
         rows = [from_doc(cls, d) for d in self.db[cls.collection].find(query)]
         return sorted(rows, key=lambda r: r.id)
 
-    def _page(self, cls, *, status, at, offset, limit, keep=lambda r: True) -> list:
+    def _page(
+        self, cls, *, status, at, offset, limit, keep=lambda r: True, order=lambda r: r.id
+    ) -> list:
         # Small data set: filter on validity in Python, then page.
         rows = [
             r
             for r in self._many(cls, {"lifecycle_status": status})
             if _in_force(r, status, at) and keep(r)
         ]
+        rows.sort(key=order)
         return rows[offset : offset + limit]
 
     def save_all(self, rows: list) -> None:
@@ -74,8 +77,15 @@ class CatalogRepository:
                 and (is_sellable is None or r.is_sellable == is_sellable)
             )
 
+        # Bundles come first, then the rest by id.
         rows = self._page(
-            ProductOffering, status=status, at=at, offset=offset, limit=limit, keep=keep
+            ProductOffering,
+            status=status,
+            at=at,
+            offset=offset,
+            limit=limit,
+            keep=keep,
+            order=lambda r: (not r.is_bundle, r.id),
         )
         for row in rows:
             self._link_offering(row)
@@ -116,6 +126,9 @@ class CatalogRepository:
         ]
         row.bundled = [
             b for b in (self._one(ProductOffering, i) for i in row.bundled_ids) if b
+        ]
+        row.related = [
+            r for r in (self._one(ProductOffering, i) for i in row.related_ids) if r
         ]
         row.prices = sorted(
             (p for p in (self._one(ProductOfferingPrice, i) for i in row.price_ids) if p),

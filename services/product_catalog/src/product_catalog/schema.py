@@ -48,6 +48,14 @@ class CharacteristicSpecification:
     values: list[str]
 
 
+@_for(dto.Relationship)
+@strawberry.type
+class ProductOfferingRelationship:
+    id: str
+    name: str
+    relationship_type: str
+
+
 @_for(dto.ProductSpecification)
 @strawberry.type
 class ProductSpecification:
@@ -98,6 +106,7 @@ class ProductOffering:
     product_specification: ProductSpecification | None
     product_offering_price: list[ProductOfferingPrice]
     bundled_product_offering: list[Ref]
+    product_offering_relationship: list[ProductOfferingRelationship]
 
 
 @_for(dto.Category)

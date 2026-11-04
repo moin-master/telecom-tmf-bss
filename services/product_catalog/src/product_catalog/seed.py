@@ -13,6 +13,8 @@ from product_catalog.models import (
 
 UPDATED = datetime(2026, 10, 1, tzinfo=timezone.utc)
 CURRENCY = "USD"
+# Smartphones that can be sold with the protection plan.
+PROTECTABLE = {"PO-1004", "PO-1009", "PO-1010", "PO-1011", "PO-1012"}
 
 
 def _utc(year: int, month: int, day: int) -> datetime:
@@ -318,13 +320,43 @@ def load(repo: CatalogRepository) -> None:
             )
         )
 
-    repo.save_all([catalog, plans, devices, addons, prepaid, bundles_cat, *offerings, esim, *bundles])
-    repo.save_all([plan_spec, sim_spec, phone_spec, pro_spec, lite_spec, roaming_spec, esim_spec])
+    # Optional protection plan, offered with every smartphone and bundle.
+    protection_spec = ProductSpecification(
+        id="SPEC-1008",
+        name="Device Protection Plan",
+        brand="Acme Care",
+        product_number="ADD-PROTECT",
+        characteristics=[
+            SpecCharacteristic(
+                name="coverage", description="What is covered",
+                value_type="string",
+                values=["Accidental damage", "Theft and loss", "Screen repair"],
+            ),
+            SpecCharacteristic(
+                name="claims", description="Claims per year",
+                value_type="number", values=["2"],
+            ),
+        ],
+        **_common(),
+    )
+    protection_price = _recurring("POP-1036", "Protection plan monthly fee", "12.00")
+    protection = ProductOffering(
+        id="PO-1018", name="Device Protection Plan",
+        description="Cover for accidental damage, theft, loss and screen repair",
+        specification_id=protection_spec.id, category_ids=[addons.id],
+        price_ids=[protection_price.id], **_common(),
+    )
+    for offer in [*offerings, *bundles]:
+        if offer.id in PROTECTABLE or offer.is_bundle:
+            offer.related_ids = [protection.id]
+
+    repo.save_all([catalog, plans, devices, addons, prepaid, bundles_cat, *offerings, esim, *bundles, protection])
+    repo.save_all([plan_spec, sim_spec, phone_spec, pro_spec, lite_spec, roaming_spec, esim_spec, protection_spec])
     repo.save_all(
         [
             basic_fee, basic_old_fee, unlimited_fee, activation, sim_price, phone_price,
             roaming_price, legacy_fee, promo_fee, future_fee, phone_x_256_price,
             phone_pro_256_price, phone_pro_512_price, phone_lite_price,
-            esim_price, *bundle_prices,
+            esim_price, protection_price, *bundle_prices,
         ]
     )

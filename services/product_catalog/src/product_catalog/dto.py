@@ -30,6 +30,13 @@ class Ref:
 
 
 @dataclass(frozen=True)
+class Relationship:
+    id: str
+    name: str
+    relationship_type: str
+
+
+@dataclass(frozen=True)
 class Characteristic:
     name: str
     description: str | None
@@ -84,6 +91,7 @@ class ProductOffering:
     product_specification: ProductSpecification | None = None
     product_offering_price: list[ProductOfferingPrice] = field(default_factory=list)
     bundled_product_offering: list[Ref] = field(default_factory=list)
+    product_offering_relationship: list[Relationship] = field(default_factory=list)
 
 
 @dataclass(frozen=True)

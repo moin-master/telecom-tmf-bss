@@ -6,6 +6,7 @@ const THEMES: Record<string, Theme> = {
   devices: { key: 'mint', emoji: '📱', label: 'Devices' },
   addons: { key: 'pink', emoji: '✨', label: 'Add-ons' },
   prepaid: { key: 'sky', emoji: '💳', label: 'Prepaid' },
+  bundles: { key: 'sun', emoji: '🎁', label: 'Bundles' },
 }
 
 const FALLBACK = [
@@ -39,6 +40,8 @@ export function offerTheme(categories: { id: string; name: string }[]): Theme {
 
 export function offerEmoji(name: string, theme: Theme): string {
   const n = name.toLowerCase()
+  if (n.includes('bundle')) return '🎁'
+  if (n.includes('esim')) return '📲'
   if (n.includes('sim')) return '💳'
   if (n.includes('roaming')) return '✈️'
   if (n.includes('phone')) return '📱'
