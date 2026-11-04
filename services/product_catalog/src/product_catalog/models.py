@@ -104,8 +104,11 @@ class ProductOffering(Lifecycle):
     category_ids: list[str] = field(default_factory=list)
     price_ids: list[str] = field(default_factory=list)
     bundled_ids: list[str] = field(default_factory=list)
+    # Optional extras sold with this offering (TMF620 productOfferingRelationship, type addOn).
+    related_ids: list[str] = field(default_factory=list)
 
     specification: ProductSpecification | None = field(default=None, metadata=TRANSIENT)
     bundled: list["ProductOffering"] = field(default_factory=list, metadata=TRANSIENT)
+    related: list["ProductOffering"] = field(default_factory=list, metadata=TRANSIENT)
     categories: list[Category] = field(default_factory=list, metadata=TRANSIENT)
     prices: list[ProductOfferingPrice] = field(default_factory=list, metadata=TRANSIENT)

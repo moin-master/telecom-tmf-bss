@@ -9,6 +9,7 @@ from product_catalog.repository import CatalogRepository
 
 # Anonymous callers see only resources that are Active and inside their validity window.
 ACTIVE = "Active"
+ADD_ON = "addOn"
 
 
 def _is_visible(row, at: datetime) -> bool:
@@ -161,6 +162,11 @@ class CatalogService:
                 _price(p) for p in row.prices if _is_visible(p, at)
             ],
             bundled_product_offering=_visible_refs(row.bundled, at),
+            product_offering_relationship=[
+                dto.Relationship(r.id, r.name, ADD_ON)
+                for r in row.related
+                if _is_visible(r, at)
+            ],
         )
 
     def _category(self, row: models.Category, at: datetime) -> dto.Category:

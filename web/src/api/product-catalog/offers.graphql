@@ -4,6 +4,16 @@ query Offers($offset: Int!, $limit: Int!, $filter: ProductOfferingFilter) {
     name
     description
     isSellable
+    isBundle
+    bundledProductOffering {
+      id
+      name
+    }
+    productOfferingRelationship {
+      id
+      name
+      relationshipType
+    }
     category {
       id
       name
@@ -19,6 +29,7 @@ query Offers($offset: Int!, $limit: Int!, $filter: ProductOfferingFilter) {
       id
       name
       priceType
+      purchaseOption
       recurringChargePeriodType
       price {
         unit
@@ -34,6 +45,16 @@ query Offer($id: String!) {
     name
     description
     isSellable
+    isBundle
+    bundledProductOffering {
+      id
+      name
+    }
+    productOfferingRelationship {
+      id
+      name
+      relationshipType
+    }
     category {
       id
       name
@@ -52,6 +73,7 @@ query Offer($id: String!) {
       id
       name
       priceType
+      purchaseOption
       recurringChargePeriodType
       recurringChargePeriodLength
       price {
