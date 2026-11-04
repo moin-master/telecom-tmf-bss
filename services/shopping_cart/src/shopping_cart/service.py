@@ -4,12 +4,13 @@ from decimal import Decimal
 from typing import Callable
 
 from bss_shared.clock import utcnow
-from bss_shared.errors import BadRequestError, NotFoundError
+from bss_shared.errors import BadRequestError, ConflictError, NotFoundError
 from product_catalog.client import (
     ProductCatalogClient,
     ProductOffering,
     ProductOfferingPrice,
 )
+from resource_inventory.client import ResourceInventoryClient
 from shopping_cart import dto, models
 from shopping_cart.repository import CartRepository
 
@@ -24,6 +25,17 @@ MULTI_BUNDLE = "multiBundleDiscount"
 CONTRACT = "contract"
 
 _OPTION_NAMES = {"own": "Own it", "tradeIn": "Trade-in", "finance": "Finance"}
+
+
+TEL_MSISDN = "TEL_MSISDN"
+
+
+def _needs_number(offering: ProductOffering) -> bool:
+    """A bundle with a SIM part, or a single offer whose specification has an MSISDN characteristic."""
+    if offering.is_bundle:
+        return any(b.role == "sim" for b in offering.bundled_product_offering)
+    spec = offering.product_specification
+    return bool(spec and any(c.name == "MSISDN" for c in spec.product_spec_characteristic))
 
 
 def _recurring_period(price: ProductOfferingPrice) -> str | None:
@@ -57,6 +69,14 @@ def _item(row: models.CartItem) -> dto.CartItem:
         product_offering=dto.Ref(row.offering_id, row.offering_name),
         purchase_option=row.purchase_option,
         contract_months=row.contract_months,
+        product=(
+            dto.Product(
+                [dto.ProductCharacteristic(TEL_MSISDN, row.number)],
+                [dto.ResourceRef(row.number_resource_id, f"MSISDN {row.number}")],
+            )
+            if row.number and row.number_resource_id
+            else None
+        ),
         launch_offer=(
             dto.Ref(row.launch_offer_id, row.launch_offer_name or row.launch_offer_id)
             if row.launch_offer_id
@@ -162,10 +182,12 @@ class CartService:
         self,
         repo: CartRepository,
         catalog: ProductCatalogClient,
+        resources: ResourceInventoryClient,
         clock: Callable[[], datetime] = utcnow,
     ):
         self.repo = repo
         self.catalog = catalog
+        self.resources = resources
         self.clock = clock
 
     def create_cart(self) -> dto.ShoppingCart:
@@ -193,7 +215,12 @@ class CartService:
         offering, option, contract, launch = self._resolve(
             offering_id, quantity, purchase_option, contract_months, launch_offer
         )
-        existing = self._twin(cart, None, offering_id, option, contract, launch)
+        # A line with a SIM has its own number, so it is never merged with another line.
+        existing = (
+            None
+            if _needs_number(offering)
+            else self._twin(cart, None, offering_id, option, contract, launch)
+        )
         if existing:
             self._check_quantity(existing.quantity + quantity)
             existing.quantity += quantity
@@ -236,7 +263,11 @@ class CartService:
         offering, option, contract, launch = self._resolve(
             item.offering_id, quantity, purchase_option, contract_months, launch_offer
         )
-        twin = self._twin(cart, item, item.offering_id, option, contract, launch)
+        twin = (
+            None
+            if _needs_number(offering)
+            else self._twin(cart, item, item.offering_id, option, contract, launch)
+        )
         if twin:
             # The new choices match another line of the same offering, so the two become one.
             self._check_quantity(twin.quantity + quantity)
@@ -245,6 +276,7 @@ class CartService:
         else:
             new = self._new_item(offering, quantity, option, contract, launch)
             new.id, new.status, new.action = item.id, item.status, item.action
+            new.number, new.number_resource_id = item.number, item.number_resource_id
             cart.items[cart.items.index(item)] = new
         self._sync_bundle_discount(cart, offering)
         cart.last_update = self.clock()
@@ -261,7 +293,38 @@ class CartService:
             cart.bundle_discount = None
         cart.last_update = self.clock()
         self.repo.save(cart)
+        self._release(item.number_resource_id)
         return _cart(cart)
+
+    def configure_item(
+        self, cart_id: str, item_id: str, number_resource_id: str
+    ) -> dto.ShoppingCart:
+        """Reserves a phone number for a line with a SIM; a number chosen before is given back."""
+        cart = self._cart_row(cart_id)
+        item = next((i for i in cart.items if i.id == item_id), None)
+        if item is None:
+            raise NotFoundError("CartItem", item_id)
+        if not _needs_number(self.catalog.get_offering(item.offering_id)):
+            raise BadRequestError(f"{item.offering_name} has no SIM, so there is no number to choose")
+        if item.number_resource_id == number_resource_id:
+            return _cart(cart)
+        # Raises Conflict when someone else holds the number; nothing has changed then.
+        number = self.resources.reserve_resource(number_resource_id)
+        previous = item.number_resource_id
+        item.number, item.number_resource_id = number.value, number.id
+        cart.last_update = self.clock()
+        self.repo.save(cart)
+        self._release(previous)
+        return _cart(cart)
+
+    def _release(self, resource_id: str | None) -> None:
+        """Gives a number back. One that is already free or gone needs nothing."""
+        if resource_id is None:
+            return
+        try:
+            self.resources.release_resource(resource_id)
+        except (ConflictError, NotFoundError):
+            pass
 
     def _resolve(self, offering_id, quantity, purchase_option, contract_months, launch_offer):
         """Validates a choice against the catalog; returns the offering and the settled choices."""
@@ -270,6 +333,8 @@ class CartService:
         offering = self.catalog.get_offering(offering_id)
         if not offering.is_sellable:
             raise BadRequestError(f"ProductOffering {offering_id} is not sellable")
+        if _needs_number(offering) and quantity != 1:
+            raise BadRequestError("A line with a SIM has one phone number, so its quantity is 1")
         option = self._purchase_option(offering, purchase_option)
         contract = self._contract(offering, option, contract_months)
         launch = self._launch_offer(offering, launch_offer)

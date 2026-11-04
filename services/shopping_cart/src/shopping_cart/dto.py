@@ -33,6 +33,26 @@ class Ref:
 
 
 @dataclass(frozen=True)
+class ProductCharacteristic:
+    name: str
+    value: str
+
+
+@dataclass(frozen=True)
+class ResourceRef:
+    id: str
+    name: str
+
+
+@dataclass(frozen=True)
+class Product:
+    """TMF663 product of a cart item: its characteristics and the resources that realize it."""
+
+    product_characteristic: list[ProductCharacteristic] = field(default_factory=list)
+    realizing_resource: list[ResourceRef] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
 class CartItem:
     id: str
     action: str
@@ -42,6 +62,7 @@ class CartItem:
     purchase_option: str | None = None
     contract_months: int | None = None
     launch_offer: Ref | None = None
+    product: Product | None = None
     item_price: list[CartPrice] = field(default_factory=list)
     item_total_price: list[CartPrice] = field(default_factory=list)
     # Totals for this item alone, split the same way as the cart totals.

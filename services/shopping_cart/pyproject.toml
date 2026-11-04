@@ -6,6 +6,7 @@ requires-python = ">=3.12"
 dependencies = [
     "bss-shared",
     "product-catalog",
+    "resource-inventory",
     "fastapi>=0.115",
     "mongita>=1.2",
     "strawberry-graphql[fastapi]>=0.240",
@@ -14,6 +15,7 @@ dependencies = [
 [tool.uv.sources]
 bss-shared = { workspace = true }
 product-catalog = { workspace = true }
+resource-inventory = { workspace = true }
 
 [build-system]
 requires = ["uv_build>=0.11.11,<0.12"]

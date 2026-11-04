@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useCart } from '../hooks/useCart'
 import { useOffer } from '../hooks/useOffers'
 import { useQuote } from '../hooks/useQuote'
+import { needsNumber } from '../lib/configure'
 import { optionLabel, optionsOf, type CartChoice, type PurchaseOption } from '../lib/purchase'
 import { AddToCartButton } from './AddToCartButton'
 import { BillPreview } from './BillPreview'
@@ -41,6 +42,8 @@ export function PricePanel({ offer }: { offer: OfferData }) {
   const [option, setOption] = useState<PurchaseOption>('own')
   const [launchPick, setLaunchPick] = useState<string | undefined>()
   const [quantity, setQuantity] = useState(1)
+  // A line with a SIM has one phone number, so its quantity stays 1.
+  const maxQuantity = needsNumber(offer) ? 1 : MAX_QUANTITY
   const [withAddOn, setWithAddOn] = useState(false)
 
   // Updating starts from what the line already has; building starts clean.
@@ -147,7 +150,7 @@ export function PricePanel({ offer }: { offer: OfferData }) {
             −
           </button>
           <output aria-live="polite">{quantity}</output>
-          <button type="button" onClick={() => setQuantity((q) => Math.min(MAX_QUANTITY, q + 1))} disabled={quantity >= MAX_QUANTITY} aria-label="One more">
+          <button type="button" onClick={() => setQuantity((q) => Math.min(maxQuantity, q + 1))} disabled={quantity >= maxQuantity} title={maxQuantity === 1 ? 'One phone number per line: add the bundle again for another' : undefined} aria-label="One more">
             +
           </button>
         </div>

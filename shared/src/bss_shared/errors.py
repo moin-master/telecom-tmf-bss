@@ -21,3 +21,8 @@ class NotFoundError(TmfError):
 class BadRequestError(TmfError):
     def __init__(self, message: str):
         super().__init__("BadRequest", "Invalid request", message, 400)
+
+
+class ConflictError(TmfError):
+    def __init__(self, message: str):
+        super().__init__("Conflict", "Conflict", message, 409)

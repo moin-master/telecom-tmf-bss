@@ -1,6 +1,17 @@
-from bss_shared.errors import NotFoundError
+import threading
+
+from bss_shared.errors import BadRequestError, ConflictError, NotFoundError
 from resource_inventory import dto, models
 from resource_inventory.repository import ResourceRepository
+
+
+ALLOCATION_STATUSES = {"available", "reserved", "allocated", "partiallyAllocated"}
+USAGE_STATES = {"idle", "active", "busy"}
+# The moves a patch may make to allocationStatus: reserve a free number or give it back.
+_MOVES = {("available", "reserved"), ("reserved", "available")}
+
+# Mongita has no transactions, so the check and the write of a patch run under one lock.
+_PATCH_LOCK = threading.Lock()
 
 
 def _resource(row: models.LogicalResource) -> dto.LogicalResource:
@@ -51,3 +62,31 @@ class ResourceService:
             search=search,
         )
         return [_resource(r) for r in rows]
+
+    def patch_resource(
+        self,
+        id: str,
+        allocation_status: str | None = None,
+        usage_state: str | None = None,
+    ) -> dto.LogicalResource:
+        """Merge-patch: only the fields sent change. A change of allocationStatus must be a legal move."""
+        if allocation_status is not None and allocation_status not in ALLOCATION_STATUSES:
+            raise BadRequestError(f"allocationStatus must be one of {sorted(ALLOCATION_STATUSES)}")
+        if usage_state is not None and usage_state not in USAGE_STATES:
+            raise BadRequestError(f"usageState must be one of {sorted(USAGE_STATES)}")
+        with _PATCH_LOCK:
+            row = self.repo.get(id)
+            if row is None:
+                raise NotFoundError("Resource", id)
+            if allocation_status is not None:
+                if row.allocation_status == allocation_status:
+                    raise ConflictError(f"Resource {id} is already {allocation_status}")
+                if (row.allocation_status, allocation_status) not in _MOVES:
+                    raise ConflictError(
+                        f"Resource {id} is {row.allocation_status} and cannot become {allocation_status}"
+                    )
+                row.allocation_status = allocation_status
+            if usage_state is not None:
+                row.usage_state = usage_state
+            self.repo.save(row)
+        return _resource(row)

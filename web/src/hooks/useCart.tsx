@@ -3,6 +3,7 @@ import { createContext, useContext, useState, type ReactNode } from 'react'
 import { cartApi } from '../api/client'
 import {
   AddCartItemDocument,
+  ConfigureCartItemDocument,
   CartDocument,
   CreateCartDocument,
   RemoveCartItemDocument,
@@ -38,6 +39,8 @@ type CartContextValue = {
   add: (offering: { id: string; name: string }, quantity?: number, choice?: CartChoice) => Promise<void>
   update: (itemId: string, quantity: number, choice?: CartChoice) => Promise<void>
   remove: (itemId: string) => Promise<void>
+  // Reserves a phone number (a TMF639 resource id) for a cart line with a SIM.
+  configure: (itemId: string, numberResourceId: string) => Promise<void>
   busy: boolean
   lastAdded: { name: string; n: number; kind: 'added' | 'updated' } | null
 }
@@ -143,6 +146,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
     onSuccess: (data) => queryClient.setQueryData(['cart', cartId], data.removeCartItem),
   })
 
+  const configureMutation = useMutation({
+    mutationFn: ({ itemId, numberResourceId }: { itemId: string; numberResourceId: string }) =>
+      cartApi.request(ConfigureCartItemDocument, { cartId: cartId!, cartItemId: itemId, numberResourceId }),
+    onSuccess: (data) => queryClient.setQueryData(['cart', cartId], data.configureCartItem),
+    // Win or lose, the pool of free numbers has changed.
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['numbers'] }),
+  })
+
   const cart = query.data
   const value: CartContextValue = {
     cart,
@@ -157,7 +168,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
     remove: async (itemId) => {
       await removeMutation.mutateAsync(itemId)
     },
-    busy: addMutation.isPending || updateMutation.isPending || removeMutation.isPending,
+    configure: async (itemId, numberResourceId) => {
+      await configureMutation.mutateAsync({ itemId, numberResourceId })
+    },
+    busy:
+      addMutation.isPending ||
+      updateMutation.isPending ||
+      removeMutation.isPending ||
+      configureMutation.isPending,
     lastAdded,
   }
 

@@ -1197,3 +1197,39 @@
 .cpanel__none {
   color: var(--muted);
 }
+
+/* The number that is reserved for a cart line */
+.reserved {
+  display: grid;
+  justify-items: start;
+  gap: 0.4rem;
+}
+.reserved__label {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.reserved__number {
+  padding: 0.1rem 0.6rem;
+  border-radius: 12px;
+  background: var(--lemon);
+  color: var(--ink);
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.configure__keep {
+  min-height: 44px;
+  padding: 0 0.4rem;
+  border: 0;
+  background: transparent;
+  color: var(--link);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
