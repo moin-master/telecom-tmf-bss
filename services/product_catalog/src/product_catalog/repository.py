@@ -128,7 +128,9 @@ class CatalogRepository:
             b for b in (self._one(ProductOffering, i) for i in row.bundled_ids) if b
         ]
         row.related = [
-            r for r in (self._one(ProductOffering, i) for i in row.related_ids) if r
+            (rel.relationship_type, offer)
+            for rel in row.relations
+            if (offer := self._one(ProductOffering, rel.id))
         ]
         row.prices = sorted(
             (p for p in (self._one(ProductOfferingPrice, i) for i in row.price_ids) if p),

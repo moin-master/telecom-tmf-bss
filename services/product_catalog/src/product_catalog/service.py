@@ -9,7 +9,6 @@ from product_catalog.repository import CatalogRepository
 
 # Anonymous callers see only resources that are Active and inside their validity window.
 ACTIVE = "Active"
-ADD_ON = "addOn"
 
 
 def _is_visible(row, at: datetime) -> bool:
@@ -74,6 +73,7 @@ def _price(row: models.ProductOfferingPrice) -> dto.ProductOfferingPrice:
         valid_for=_period(row),
         last_update=row.last_update,
         purchase_option=row.purchase_option,
+        percentage=row.percentage,
     )
 
 
@@ -163,9 +163,15 @@ class CatalogService:
             ],
             bundled_product_offering=_visible_refs(row.bundled, at),
             product_offering_relationship=[
-                dto.Relationship(r.id, r.name, ADD_ON)
-                for r in row.related
+                dto.Relationship(r.id, r.name, kind)
+                for kind, r in row.related
                 if _is_visible(r, at)
+            ],
+            product_offering_term=[
+                dto.ProductOfferingTerm(
+                    t.name, dto.Duration(t.months, "month"), list(t.available_with)
+                )
+                for t in row.terms
             ],
         )
 

@@ -1,11 +1,10 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { CartLine } from '../components/CartLine'
+import { OrderSummary } from '../components/OrderSummary'
 import { StateCard } from '../components/StateViews'
 import { useCart } from '../hooks/useCart'
 import { apiError } from '../lib/errors'
-import { money, perLabel } from '../lib/format'
-import { optionLabel } from '../lib/purchase'
-import { offerEmoji } from '../lib/theme'
 
 export function Cart() {
   const { cart, loading, remove, busy } = useCart()
@@ -53,40 +52,7 @@ export function Cart() {
       <div className="cart__grid">
         <ul className="lines">
           {cart.cartItem.map((item) => (
-            <li key={item.id} className="line">
-              <span className="line__tile" aria-hidden="true">
-                {offerEmoji(item.productOffering.name, { key: 'sun', emoji: '🛍️', label: '' })}
-              </span>
-              <div className="line__main">
-                <Link to={`/offers/${item.productOffering.id}`} className="line__name">
-                  {item.productOffering.name}
-                </Link>
-                {item.purchaseOption && <span className="line__option">{optionLabel(item.purchaseOption)}</span>}
-                <ul className="line__prices">
-                  {item.itemPrice.map((p, i) => (
-                    <li key={i}>
-                      {p.name}{' '}
-                      <b>
-                        {money(p.price.dutyFreeAmount.unit, p.price.dutyFreeAmount.value)}
-                        {perLabel(p.recurringChargePeriod)}
-                      </b>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="line__side">
-                <span className="line__qty">Qty {item.quantity}</span>
-                <button
-                  type="button"
-                  className="line__remove"
-                  onClick={() => onRemove(item.id)}
-                  disabled={busy}
-                  aria-label={`Remove ${item.productOffering.name}`}
-                >
-                  Remove
-                </button>
-              </div>
-            </li>
+            <CartLine key={item.id} item={item} busy={busy} onRemove={() => onRemove(item.id)} />
           ))}
         </ul>
 
@@ -99,14 +65,7 @@ export function Cart() {
             </p>
           )}
 
-          <dl className="receipt__totals">
-            {cart.cartTotalPrice.map((t, i) => (
-              <div key={i}>
-                <dt>{t.priceType === 'recurring' ? `Every ${t.recurringChargePeriod ?? 'period'}` : 'Due today'}</dt>
-                <dd>{money(t.price.taxIncludedAmount.unit, t.price.taxIncludedAmount.value)}</dd>
-              </div>
-            ))}
-          </dl>
+          <OrderSummary cart={cart} />
 
           <button type="button" className="btn btn--big receipt__checkout" disabled>
             Checkout opens soon

@@ -86,9 +86,29 @@ class ProductOfferingPrice(Lifecycle):
     recurring_charge_period_length: int | None = None
     uom_amount: Decimal | None = None
     uom_units: str | None = None
+    # For discount prices: percent off the plan fee (price_value is then empty).
+    percentage: Decimal | None = None
     # Project extension: set when the price applies to one purchase option only
     # (own, tradeIn, finance); empty means it applies to every option.
     purchase_option: str | None = None
+
+
+@dataclass(kw_only=True)
+class Relation:
+    """A link to another offering; the type says what it is (addOn, launchOffer, contract, ...)."""
+
+    id: str
+    relationship_type: str
+
+
+@dataclass(kw_only=True)
+class Term:
+    """TMF620 productOfferingTerm. `available_with` is a project extension: the
+    purchase options the term can be combined with (empty means all)."""
+
+    name: str
+    months: int
+    available_with: list[str] = field(default_factory=list)
 
 
 @dataclass(kw_only=True)
@@ -104,11 +124,13 @@ class ProductOffering(Lifecycle):
     category_ids: list[str] = field(default_factory=list)
     price_ids: list[str] = field(default_factory=list)
     bundled_ids: list[str] = field(default_factory=list)
-    # Optional extras sold with this offering (TMF620 productOfferingRelationship, type addOn).
-    related_ids: list[str] = field(default_factory=list)
+    relations: list[Relation] = field(default_factory=list)
+    terms: list[Term] = field(default_factory=list)
 
     specification: ProductSpecification | None = field(default=None, metadata=TRANSIENT)
     bundled: list["ProductOffering"] = field(default_factory=list, metadata=TRANSIENT)
-    related: list["ProductOffering"] = field(default_factory=list, metadata=TRANSIENT)
+    related: list[tuple[str, "ProductOffering"]] = field(
+        default_factory=list, metadata=TRANSIENT
+    )
     categories: list[Category] = field(default_factory=list, metadata=TRANSIENT)
     prices: list[ProductOfferingPrice] = field(default_factory=list, metadata=TRANSIENT)

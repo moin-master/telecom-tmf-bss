@@ -1,6 +1,13 @@
 // How a bundle can be bought. The catalog tags prices with one of these; untagged prices apply to every option.
 export type PurchaseOption = 'own' | 'tradeIn' | 'finance'
 
+// What the shopper chose for one cart line, sent with addCartItem.
+export type CartChoice = {
+  option?: PurchaseOption
+  contractMonths?: number
+  launchOffer?: string
+}
+
 export const OPTIONS: { key: PurchaseOption; label: string; hint: string }[] = [
   { key: 'own', label: 'Own it', hint: 'Pay for the phone today' },
   { key: 'tradeIn', label: 'Trade-in', hint: 'Credit for your old phone' },

@@ -37,6 +37,19 @@ class Relationship:
 
 
 @dataclass(frozen=True)
+class Duration:
+    amount: int
+    units: str
+
+
+@dataclass(frozen=True)
+class ProductOfferingTerm:
+    name: str
+    duration: Duration
+    available_with: list[str] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
 class Characteristic:
     name: str
     description: str | None
@@ -74,6 +87,7 @@ class ProductOfferingPrice:
     valid_for: TimePeriod
     last_update: datetime
     purchase_option: str | None = None
+    percentage: Decimal | None = None
 
 
 @dataclass(frozen=True)
@@ -92,6 +106,7 @@ class ProductOffering:
     product_offering_price: list[ProductOfferingPrice] = field(default_factory=list)
     bundled_product_offering: list[Ref] = field(default_factory=list)
     product_offering_relationship: list[Relationship] = field(default_factory=list)
+    product_offering_term: list[ProductOfferingTerm] = field(default_factory=list)
 
 
 @dataclass(frozen=True)

@@ -49,8 +49,10 @@ class CartItem:
     quantity: int
     product_offering: ProductOfferingRef
     purchase_option: str | None
+    contract_months: int | None
     item_price: list[CartPrice]
     item_total_price: list[CartPrice]
+    item_subtotal: list[CartPrice]
 
 
 @_for(dto.ShoppingCart)
@@ -88,10 +90,17 @@ class Mutation:
         product_offering_id: str,
         quantity: int = 1,
         purchase_option: str | None = None,
+        contract_months: int | None = None,
+        launch_offer: str | None = None,
     ) -> ShoppingCart:
         return _convert(
             _service(info).add_item(
-                cart_id, product_offering_id, quantity, purchase_option
+                cart_id,
+                product_offering_id,
+                quantity,
+                purchase_option,
+                contract_months,
+                launch_offer,
             )
         )
 

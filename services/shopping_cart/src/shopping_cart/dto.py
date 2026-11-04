@@ -39,8 +39,11 @@ class CartItem:
     quantity: int
     product_offering: Ref
     purchase_option: str | None = None
+    contract_months: int | None = None
     item_price: list[CartPrice] = field(default_factory=list)
     item_total_price: list[CartPrice] = field(default_factory=list)
+    # Totals for this item alone, split the same way as the cart totals.
+    item_subtotal: list[CartPrice] = field(default_factory=list)
 
 
 @dataclass(frozen=True)

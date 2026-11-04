@@ -735,3 +735,31 @@
 .addon:has(input:checked) .addon__hint {
   color: var(--ink);
 }
+
+/* ---------- deals on a bundle ---------- */
+.deals {
+  margin-top: 0.5rem;
+}
+.options--stack .options__row {
+  grid-template-columns: 1fr;
+}
+.options--stack .option {
+  padding: 0.7rem 0.8rem;
+}
+.addon.is-disabled .addon__box {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.addon.is-disabled input {
+  cursor: not-allowed;
+}
+.deals__notes {
+  margin: 0.6rem 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+.deals__notes b {
+  color: var(--text);
+}

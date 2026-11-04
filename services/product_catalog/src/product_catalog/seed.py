@@ -3,6 +3,8 @@ from decimal import Decimal
 
 from product_catalog.repository import CatalogRepository
 from product_catalog.models import (
+    Relation,
+    Term,
     Catalog,
     Category,
     ProductOffering,
@@ -346,11 +348,69 @@ def load(repo: CatalogRepository) -> None:
         specification_id=protection_spec.id, category_ids=[addons.id],
         price_ids=[protection_price.id], **_common(),
     )
+    # Promotions: discount offers the cart applies. They are not sold on their own.
+    promos_cat = Category(
+        id="CATG-1006", name="Promotions", is_root=True, catalog_id=catalog.id, **_common()
+    )
+
+    def promo(id, name, description, price, term_months=None, sellable=False):
+        return ProductOffering(
+            id=id, name=name, description=description, is_sellable=sellable,
+            category_ids=[promos_cat.id], price_ids=[price.id] if price else [],
+            terms=[Term(name=f"{term_months} months", months=term_months)] if term_months else [],
+            **_common(),
+        )
+
+    def discount(id, name, value=None, percentage=None, one_time=False):
+        return ProductOfferingPrice(
+            id=id, name=name, price_type="discount",
+            price_value=Decimal(value) if value else None,
+            price_unit=CURRENCY if value else None,
+            percentage=Decimal(percentage) if percentage else None,
+            recurring_charge_period_type=None if one_time else "month",
+            recurring_charge_period_length=None if one_time else 1,
+            **_common(),
+        )
+
+    d_half = discount("POP-1037", "50% off the plan fee", percentage="50")
+    d_ten = discount("POP-1038", "10.00 off per month", value="-10.00")
+    d_free = discount("POP-1039", "Plan fee waived", percentage="100")
+    d_waiver = discount("POP-1040", "Activation fee waived", value="-10.00", one_time=True)
+    d_double = discount("POP-1041", "5.00 off per month", value="-5.00")
+    launch = [
+        promo("PO-1019", "Launch offer: 50% off plan fee for 6 months",
+              "Half price plan fee for the first 6 months", d_half, 6),
+        promo("PO-1020", "Launch offer: $10 off per month for 6 months",
+              "10.00 off the plan fee every month for the first 6 months", d_ten, 6),
+        promo("PO-1021", "Launch offer: free plan fee for 6 months",
+              "No plan fee for the first 6 months", d_free, 6),
+    ]
+    waiver = promo("PO-1022", "Activation fee waiver",
+                   "No activation fee with the 2-year contract", d_waiver)
+    double = promo("PO-1023", "Double bundle discount",
+                   "5.00 off every month when you buy two bundles", d_double)
+    contract = ProductOffering(
+        id="PO-1024", name="2-year contract",
+        description="24 month contract, available with Finance or Trade-in",
+        is_sellable=False, category_ids=[promos_cat.id],
+        terms=[Term(name="2-year contract", months=24, available_with=["finance", "tradeIn"])],
+        **_common(),
+    )
     for offer in [*offerings, *bundles]:
         if offer.id in PROTECTABLE or offer.is_bundle:
-            offer.related_ids = [protection.id]
+            offer.relations.append(Relation(id=protection.id, relationship_type="addOn"))
+    for offer in bundles:
+        offer.relations += [Relation(id=p.id, relationship_type="launchOffer") for p in launch]
+        offer.relations += [
+            Relation(id=waiver.id, relationship_type="activationWaiver"),
+            Relation(id=double.id, relationship_type="multiBundleDiscount"),
+            Relation(id=contract.id, relationship_type="contract"),
+        ]
 
-    repo.save_all([catalog, plans, devices, addons, prepaid, bundles_cat, *offerings, esim, *bundles, protection])
+    repo.save_all(
+        [catalog, plans, devices, addons, prepaid, bundles_cat, promos_cat, *offerings, esim,
+         *bundles, protection, *launch, waiver, double, contract]
+    )
     repo.save_all([plan_spec, sim_spec, phone_spec, pro_spec, lite_spec, roaming_spec, esim_spec, protection_spec])
     repo.save_all(
         [
@@ -358,5 +418,6 @@ def load(repo: CatalogRepository) -> None:
             roaming_price, legacy_fee, promo_fee, future_fee, phone_x_256_price,
             phone_pro_256_price, phone_pro_512_price, phone_lite_price,
             esim_price, protection_price, *bundle_prices,
+            d_half, d_ten, d_free, d_waiver, d_double,
         ]
     )

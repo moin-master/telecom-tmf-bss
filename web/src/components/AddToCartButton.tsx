@@ -1,19 +1,19 @@
 import { useEffect, useState } from 'react'
 import { useCart } from '../hooks/useCart'
 import { apiError } from '../lib/errors'
-import type { PurchaseOption } from '../lib/purchase'
+import type { CartChoice } from '../lib/purchase'
 import { Burst } from './Burst'
 
 type Props = {
   offering: { id: string; name: string }
   quantity?: number
-  option?: PurchaseOption
+  choice?: CartChoice
   // Optional extras ticked by the shopper; each is added as its own line with the same quantity.
   extras?: { id: string; name: string }[]
   sellable?: boolean
 }
 
-export function AddToCartButton({ offering, quantity = 1, option, extras = [], sellable = true }: Props) {
+export function AddToCartButton({ offering, quantity = 1, choice, extras = [], sellable = true }: Props) {
   const { add } = useCart()
   const [pending, setPending] = useState(false)
   const [done, setDone] = useState(false)
@@ -30,7 +30,7 @@ export function AddToCartButton({ offering, quantity = 1, option, extras = [], s
     setError(null)
     setPending(true)
     try {
-      await add(offering, quantity, option)
+      await add(offering, quantity, choice)
       for (const extra of extras) {
         try {
           await add(extra, quantity)

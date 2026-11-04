@@ -55,6 +55,14 @@ query Offer($id: String!) {
       name
       relationshipType
     }
+    productOfferingTerm {
+      name
+      availableWith
+      duration {
+        amount
+        units
+      }
+    }
     category {
       id
       name
