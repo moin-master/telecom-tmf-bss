@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom'
 import type { CartFieldsFragment } from '../api/generated/shopping-cart/graphql'
 import { useOffer } from '../hooks/useOffers'
+import { needsNumber } from '../lib/configure'
 import { optionLabel } from '../lib/purchase'
 import { offerEmoji } from '../lib/theme'
+import { BundleParts } from './BundleParts'
 import { Charges } from './Charges'
 
 type Item = CartFieldsFragment['cartItem'][number]
@@ -12,6 +14,9 @@ export function CartLine({ item, busy, onRemove }: { item: Item; busy: boolean; 
   // The offer is usually already loaded by the page the shopper came from.
   const offer = useOffer(item.productOffering.id)
   const includes = offer.data?.bundledProductOffering ?? []
+  // The number is not saved with the cart item yet, so a SIM line always still needs one.
+  const configurable = !!offer.data && needsNumber(offer.data)
+  const configureHref = `/cart/items/${item.id}/configure`
   const oneTime = item.itemTotalPrice.filter((p) => p.priceType === 'oneTime')
   const monthly = item.itemTotalPrice.filter((p) => p.priceType === 'recurring')
 
@@ -27,11 +32,6 @@ export function CartLine({ item, busy, onRemove }: { item: Item; busy: boolean; 
         </Link>
         {item.purchaseOption && <span className="line__option">{optionLabel(item.purchaseOption)}</span>}
         {item.contractMonths && <span className="line__option">{item.contractMonths / 12}-year contract</span>}
-        {includes.length > 0 && (
-          <p className="line__includes">
-            <span>Includes</span> {includes.map((b) => b.name).join(' · ')}
-          </p>
-        )}
       </div>
 
       <div className="line__side">
@@ -42,10 +42,29 @@ export function CartLine({ item, busy, onRemove }: { item: Item; busy: boolean; 
           onClick={onRemove}
           disabled={busy}
           aria-label={`Remove ${item.productOffering.name}`}
+          title="Remove"
         >
-          Remove
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M3 6h18" />
+            <path d="M8 6V4h8v2" />
+            <path d="M6 6l1 14h10l1-14" />
+            <path d="M10 11v5M14 11v5" />
+          </svg>
         </button>
       </div>
+
+      {includes.length > 0 && (
+        <BundleParts components={includes} configureHref={configurable ? configureHref : undefined} />
+      )}
+      {/* A single SIM offer has no parts, so it carries its own Configure button. */}
+      {configurable && includes.length === 0 && (
+        <div className="line__configure">
+          <span>Needs a number</span>
+          <Link to={configureHref} className="link-action">
+            Configure
+          </Link>
+        </div>
+      )}
 
       <div className="line__charges">
         <Charges

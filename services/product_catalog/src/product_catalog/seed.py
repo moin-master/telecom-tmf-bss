@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from product_catalog.repository import CatalogRepository
 from product_catalog.models import (
+    BundledEntry,
     Relation,
     Term,
     Catalog,
@@ -107,7 +108,11 @@ def load(repo: CatalogRepository) -> None:
             SpecCharacteristic(
                 name="simSize", description="Form factor",
                 value_type="string", values=["Nano"],
-            )
+            ),
+            SpecCharacteristic(
+                name="MSISDN", description="Phone number, chosen in the cart",
+                value_type="string",
+            ),
         ],
         **_common(),
     )
@@ -270,7 +275,11 @@ def load(repo: CatalogRepository) -> None:
             SpecCharacteristic(
                 name="simSize", description="Form factor",
                 value_type="string", values=["eSIM"],
-            )
+            ),
+            SpecCharacteristic(
+                name="MSISDN", description="Phone number, chosen in the cart",
+                value_type="string",
+            ),
         ],
         **_common(),
     )
@@ -318,7 +327,12 @@ def load(repo: CatalogRepository) -> None:
             ProductOffering(
                 id=f"PO-{1014 + n}", name=f"{tier} Bundle", description=text,
                 is_bundle=True, category_ids=[bundles_cat.id],
-                bundled_ids=[phone, plan, "PO-1013", *extras],
+                bundled_entries=[
+                    BundledEntry(id=phone, role="device"),
+                    BundledEntry(id=plan, role="plan"),
+                    BundledEntry(id="PO-1013", role="sim"),
+                    *(BundledEntry(id=e, role="addOn") for e in extras),
+                ],
                 price_ids=[*(p.id for p in prices), activation.id], **_common(),
             )
         )

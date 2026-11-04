@@ -2,11 +2,13 @@ from fastapi import FastAPI
 
 from bss_shared.config import CONTEXT_PATH
 from product_catalog.app import create_app as create_product_catalog
+from resource_inventory.app import create_app as create_resource_inventory
 from shopping_cart.app import create_app as create_shopping_cart
 
 # URL path -> service factory. Paths come from docs/project-routing.md.
 SERVICES = {
     "/product-catalog": create_product_catalog,
+    "/resource": create_resource_inventory,
     "/shopping-cart": create_shopping_cart,
 }
 

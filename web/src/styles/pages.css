@@ -485,14 +485,14 @@
   text-decoration: underline;
   text-underline-offset: 4px;
 }
-.line__includes {
-  margin-top: 0.35rem;
+.line__configure {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.8rem;
   color: var(--muted);
-  font-size: 0.88rem;
-}
-.line__includes span {
-  color: var(--text);
-  font-weight: 700;
+  font-size: 0.9rem;
 }
 /* Charges sit under the header and span the full width of the card. */
 .line__charges {
@@ -562,8 +562,8 @@
   font-variant-numeric: tabular-nums;
 }
 .line__side {
-  display: grid;
-  justify-items: end;
+  display: flex;
+  align-items: center;
   gap: 0.3rem;
 }
 .line__qty {
@@ -572,19 +572,22 @@
   background: var(--band);
   font-size: 0.85rem;
   font-weight: 700;
+  white-space: nowrap;
 }
 .line__remove {
-  min-height: 44px;
-  padding: 0 0.4rem;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
   border: 0;
+  border-radius: 50%;
   background: transparent;
-  color: var(--link);
-  font: inherit;
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  color: var(--muted);
   cursor: pointer;
+}
+.line__remove:hover:not(:disabled) {
+  background: var(--band);
+  color: var(--text);
 }
 .line__remove:disabled {
   opacity: 0.5;
@@ -829,4 +832,26 @@
   .bill {
     transition: none;
   }
+}
+
+/* Configure page */
+.configure {
+  display: grid;
+  gap: 1.6rem;
+  padding-top: 1.2rem;
+}
+.configure__back {
+  justify-self: start;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-underline-offset: 4px;
+}
+.configure__back::before {
+  content: '← ';
+}
+.configure__actions {
+  display: grid;
+  justify-items: start;
+  gap: 0.6rem;
 }
