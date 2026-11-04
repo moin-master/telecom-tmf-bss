@@ -1,0 +1,69 @@
+fragment CartFields on ShoppingCart {
+  id
+  lastUpdate
+  cartItem {
+    id
+    quantity
+    productOffering {
+      id
+      name
+    }
+    itemPrice {
+      name
+      priceType
+      recurringChargePeriod
+      price {
+        dutyFreeAmount {
+          unit
+          value
+        }
+      }
+    }
+    itemTotalPrice {
+      name
+      priceType
+      recurringChargePeriod
+      price {
+        taxIncludedAmount {
+          unit
+          value
+        }
+      }
+    }
+  }
+  cartTotalPrice {
+    name
+    priceType
+    recurringChargePeriod
+    price {
+      taxIncludedAmount {
+        unit
+        value
+      }
+    }
+  }
+}
+
+query Cart($id: String!) {
+  shoppingCart(id: $id) {
+    ...CartFields
+  }
+}
+
+mutation CreateCart {
+  createShoppingCart {
+    ...CartFields
+  }
+}
+
+mutation AddCartItem($cartId: String!, $productOfferingId: String!, $quantity: Int!) {
+  addCartItem(cartId: $cartId, productOfferingId: $productOfferingId, quantity: $quantity) {
+    ...CartFields
+  }
+}
+
+mutation RemoveCartItem($cartId: String!, $cartItemId: String!) {
+  removeCartItem(cartId: $cartId, cartItemId: $cartItemId) {
+    ...CartFields
+  }
+}
