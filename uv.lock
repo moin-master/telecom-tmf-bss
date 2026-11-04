@@ -7,6 +7,7 @@ members = [
     "bss-host",
     "bss-shared",
     "product-catalog",
+    "resource-inventory",
     "shopping-cart",
     "telecom-tmf-bss",
 ]
@@ -50,6 +51,7 @@ dependencies = [
     { name = "bss-shared" },
     { name = "fastapi" },
     { name = "product-catalog" },
+    { name = "resource-inventory" },
     { name = "shopping-cart" },
     { name = "uvicorn" },
 ]
@@ -59,6 +61,7 @@ requires-dist = [
     { name = "bss-shared", editable = "shared" },
     { name = "fastapi", specifier = ">=0.115" },
     { name = "product-catalog", editable = "services/product_catalog" },
+    { name = "resource-inventory", editable = "services/resource_inventory" },
     { name = "shopping-cart", editable = "services/shopping_cart" },
     { name = "uvicorn", specifier = ">=0.30" },
 ]
@@ -416,6 +419,25 @@ wheels = [
 ]
 
 [[package]]
+name = "resource-inventory"
+version = "0.1.0"
+source = { editable = "services/resource_inventory" }
+dependencies = [
+    { name = "bss-shared" },
+    { name = "fastapi" },
+    { name = "mongita" },
+    { name = "strawberry-graphql", extra = ["fastapi"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "bss-shared", editable = "shared" },
+    { name = "fastapi", specifier = ">=0.115" },
+    { name = "mongita", specifier = ">=1.2" },
+    { name = "strawberry-graphql", extras = ["fastapi"], specifier = ">=0.240" },
+]
+
+[[package]]
 name = "shopping-cart"
 version = "0.1.0"
 source = { editable = "services/shopping_cart" }
@@ -488,6 +510,7 @@ dependencies = [
     { name = "bss-host" },
     { name = "bss-shared" },
     { name = "product-catalog" },
+    { name = "resource-inventory" },
     { name = "shopping-cart" },
 ]
 
@@ -496,6 +519,7 @@ requires-dist = [
     { name = "bss-host", editable = "host" },
     { name = "bss-shared", editable = "shared" },
     { name = "product-catalog", editable = "services/product_catalog" },
+    { name = "resource-inventory", editable = "services/resource_inventory" },
     { name = "shopping-cart", editable = "services/shopping_cart" },
 ]
 
