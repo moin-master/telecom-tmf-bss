@@ -1,0 +1,75 @@
+/* Lemon yellow palette: https://paletadecolores.org/en/colors/lemon-yellow.html
+   Lemon always carries dark text (18.6:1). White on lemon fails, and lemon text on white fails.
+   The theme is set on <html data-theme="light|dark"> (see hooks/useTheme.ts and the script in index.html). */
+:root {
+  color-scheme: light;
+
+  --lemon: #fff700;
+  --lemon-hover: #ffef00;
+  --lemon-50: #fffed9;
+  --lemon-100: #fffdb2;
+  --lemon-200: #fffb80;
+  --ink: #1c1c1a;
+
+  --font-display: 'Inter', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --radius: 22px;
+  --gutter: 20px;
+
+  /* light theme: white */
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --band: #f6f6f3;
+  --tile: #f4f4ef;
+  --text: #1c1c1a;
+  --muted: #5c5c57;
+  --line: #e6e6e1;
+  --line-strong: #cfcfc8;
+  --focus: #1c1c1a;
+  --link: #1c1c1a;
+  --pill-dark-bg: #1c1c1a;
+  --pill-dark-text: #ffffff;
+  --pill-dark-hover: #3a3a36;
+  --badge-bg: #fffed9;
+  --badge-text: #1c1c1a;
+  --check-bg: #1c1c1a;
+  --check-fg: #fff700;
+  --done-bg: #1c1c1a;
+  --done-text: #fff700;
+  --toast-bg: #1c1c1a;
+  --toast-text: #ffffff;
+  --shadow-sm: 0 1px 2px rgb(28 28 26 / 0.06);
+  --shadow: 0 1px 2px rgb(28 28 26 / 0.05), 0 8px 24px rgb(28 28 26 / 0.06);
+  --shadow-lg: 0 2px 4px rgb(28 28 26 / 0.05), 0 18px 44px rgb(28 28 26 / 0.12);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* dark theme: blackish gray */
+  --bg: #141414;
+  --surface: #202020;
+  --band: #1a1a1a;
+  --tile: #2a2a2a;
+  --text: #f4f4f1;
+  --muted: #a8a8a0;
+  --line: rgb(255 255 255 / 0.1);
+  --line-strong: rgb(255 255 255 / 0.22);
+  --focus: #fff700;
+  --link: #fff700;
+  --pill-dark-bg: #2a2a2a;
+  --pill-dark-text: #f4f4f1;
+  --pill-dark-hover: #363636;
+  --badge-bg: #fff700;
+  --badge-text: #1c1c1a;
+  --check-bg: #fff700;
+  --check-fg: #1c1c1a;
+  --done-bg: #f4f4f1;
+  --done-text: #1c1c1a;
+  --toast-bg: #f4f4f1;
+  --toast-text: #1c1c1a;
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 2px 4px rgb(0 0 0 / 0.4), 0 18px 44px rgb(0 0 0 / 0.5);
+}

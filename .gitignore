@@ -48,3 +48,6 @@ data/
 .idea/
 .vscode/
 .DS_Store
+
+# Web app
+node_modules/

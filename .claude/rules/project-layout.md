@@ -29,6 +29,9 @@ services/<name>/            <name> is the module name from docs/project-routing.
     events.py               signals this service publishes (when it has any)
     seed.py                 seed data
   data/<name>.db            SQLite file (gitignored)
+web/                        React + TypeScript UI (Vite), see .claude/rules/web-code.md
+  src/api/                  GraphQL client, <service>/*.graphql operations, generated types
+  src/pages/, components/, hooks/, lib/, styles/, data/
 specs/                      TM Forum spec snapshot, committed, not updated (see specs/README.md)
 payloads/<name>/            generated sample payloads
 .run/                       pid files for restart commands (gitignored)

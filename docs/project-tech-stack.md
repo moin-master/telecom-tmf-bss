@@ -40,7 +40,22 @@ Status values: **decided** (agreed), **proposed** (my suggestion, not yet agreed
 | Domain APIs | TM Forum Open APIs: TMF620, TMF621, TMF622, TMF629, TMF632, TMF635, TMF637, TMF638, TMF639, TMF641, TMF663, TMF666, TMF676, TMF678, TMF700 | decided | list and notes in proposal section 4; TMF700 exists in the tmforum-apis repos (v4.0.0 only) |
 | Spec version | TM Forum v5 (OpenAPI yaml) | decided | snapshot in `specs/`, see specs/README.md; the tmforum-apis repos have no v5 file for TMF641, TMF676 and TMF700, so those three are open |
 
-## 5. Tooling
+## 5. Web UI
+
+Lives in `web/`. Shows the offers, cart and later screens, plus an "Explore" area that visualizes the services and APIs. Built step by step as each API is implemented.
+
+| Area | Technology | Status | Notes |
+|------|------------|--------|-------|
+| UI library | React with TypeScript | proposed | strict mode |
+| Build and dev server | Vite | proposed | port 5173; proxies `/telecom-tmf-bss` to the backend on 8060, so no CORS is needed |
+| Routing | React Router | proposed | |
+| Server data | TanStack Query | proposed | caching and loading states |
+| GraphQL client | graphql-request | proposed | small; one client per service |
+| Types | GraphQL Code Generator (client preset) | proposed | one output folder per service; generated files committed |
+| Styling | plain CSS with variables | proposed | no UI framework until needed |
+| Node | Node 24, npm | in use | |
+
+## 6. Tooling
 
 | Area | Technology | Status | Notes |
 |------|------------|--------|-------|

@@ -1,0 +1,71 @@
+query Offers($offset: Int!, $limit: Int!, $filter: ProductOfferingFilter) {
+  productOfferingList(offset: $offset, limit: $limit, filter: $filter) {
+    id
+    name
+    description
+    isSellable
+    category {
+      id
+      name
+    }
+    productSpecification {
+      brand
+      productSpecCharacteristic {
+        name
+        values
+      }
+    }
+    productOfferingPrice {
+      id
+      name
+      priceType
+      recurringChargePeriodType
+      price {
+        unit
+        value
+      }
+    }
+  }
+}
+
+query Offer($id: String!) {
+  productOffering(id: $id) {
+    id
+    name
+    description
+    isSellable
+    category {
+      id
+      name
+    }
+    productSpecification {
+      name
+      brand
+      description
+      productSpecCharacteristic {
+        name
+        description
+        values
+      }
+    }
+    productOfferingPrice {
+      id
+      name
+      priceType
+      recurringChargePeriodType
+      recurringChargePeriodLength
+      price {
+        unit
+        value
+      }
+    }
+  }
+}
+
+query Categories {
+  categoryList(offset: 0, limit: 100) {
+    id
+    name
+    isRoot
+  }
+}
