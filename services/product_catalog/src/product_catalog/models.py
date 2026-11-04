@@ -1,135 +1,106 @@
+"""Documents stored by this service, one Mongita collection per class.
+
+Links between documents are stored as ids. The repository fills the transient
+fields with the linked documents when it reads them.
+"""
+
+from dataclasses import dataclass, field
 from datetime import datetime
 from decimal import Decimal
+from typing import ClassVar
 
-from sqlalchemy import JSON, Column, ForeignKey, Table
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-
-from bss_shared.db import DecimalText, UtcDateTime
+from bss_shared.db import TRANSIENT
 
 
-class Base(DeclarativeBase):
-    pass
-
-
-offering_category = Table(
-    "offering_category",
-    Base.metadata,
-    Column("offering_id", ForeignKey("product_offering.id"), primary_key=True),
-    Column("category_id", ForeignKey("category.id"), primary_key=True),
-)
-
-offering_price = Table(
-    "offering_price",
-    Base.metadata,
-    Column("offering_id", ForeignKey("product_offering.id"), primary_key=True),
-    Column("price_id", ForeignKey("product_offering_price.id"), primary_key=True),
-)
-
-
+@dataclass(kw_only=True)
 class Lifecycle:
-    """Columns every TMF620 resource shares."""
+    """Fields every TMF620 resource shares."""
 
-    version: Mapped[str] = mapped_column(default="1.0")
-    lifecycle_status: Mapped[str]
-    valid_from: Mapped[datetime | None] = mapped_column(UtcDateTime)
-    valid_to: Mapped[datetime | None] = mapped_column(UtcDateTime)
-    last_update: Mapped[datetime] = mapped_column(UtcDateTime)
-
-
-class Catalog(Lifecycle, Base):
-    __tablename__ = "catalog"
-
-    id: Mapped[str] = mapped_column(primary_key=True)
-    name: Mapped[str]
-    description: Mapped[str | None]
-    catalog_type: Mapped[str | None]
-
-    categories: Mapped[list["Category"]] = relationship(back_populates="catalog")
+    version: str = "1.0"
+    lifecycle_status: str
+    valid_from: datetime | None = None
+    valid_to: datetime | None = None
+    last_update: datetime
 
 
-class Category(Lifecycle, Base):
-    __tablename__ = "category"
+@dataclass(kw_only=True)
+class Catalog(Lifecycle):
+    collection: ClassVar[str] = "catalog"
 
-    id: Mapped[str] = mapped_column(primary_key=True)
-    name: Mapped[str]
-    description: Mapped[str | None]
-    is_root: Mapped[bool] = mapped_column(default=False)
-    catalog_id: Mapped[str | None] = mapped_column(ForeignKey("catalog.id"))
-    parent_id: Mapped[str | None] = mapped_column(ForeignKey("category.id"))
+    id: str
+    name: str
+    description: str | None = None
+    catalog_type: str | None = None
 
-    catalog: Mapped[Catalog | None] = relationship(back_populates="categories")
-    parent: Mapped["Category | None"] = relationship(
-        back_populates="children", remote_side=[id]
-    )
-    children: Mapped[list["Category"]] = relationship(back_populates="parent")
-    offerings: Mapped[list["ProductOffering"]] = relationship(
-        secondary=offering_category, back_populates="categories"
-    )
+    categories: list["Category"] = field(default_factory=list, metadata=TRANSIENT)
 
 
-class ProductSpecification(Lifecycle, Base):
-    __tablename__ = "product_specification"
+@dataclass(kw_only=True)
+class Category(Lifecycle):
+    collection: ClassVar[str] = "category"
 
-    id: Mapped[str] = mapped_column(primary_key=True)
-    name: Mapped[str]
-    description: Mapped[str | None]
-    brand: Mapped[str | None]
-    product_number: Mapped[str | None]
-    is_bundle: Mapped[bool] = mapped_column(default=False)
+    id: str
+    name: str
+    description: str | None = None
+    is_root: bool = False
+    catalog_id: str | None = None
+    parent_id: str | None = None
 
-    characteristics: Mapped[list["SpecCharacteristic"]] = relationship(
-        back_populates="specification", order_by="SpecCharacteristic.id"
-    )
-
-
-class SpecCharacteristic(Base):
-    __tablename__ = "spec_characteristic"
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    specification_id: Mapped[str] = mapped_column(
-        ForeignKey("product_specification.id")
-    )
-    name: Mapped[str]
-    description: Mapped[str | None]
-    value_type: Mapped[str]
-    values: Mapped[list[str]] = mapped_column(JSON, default=list)
-
-    specification: Mapped[ProductSpecification] = relationship(
-        back_populates="characteristics"
-    )
+    parent: "Category | None" = field(default=None, metadata=TRANSIENT)
+    children: list["Category"] = field(default_factory=list, metadata=TRANSIENT)
+    offerings: list["ProductOffering"] = field(default_factory=list, metadata=TRANSIENT)
 
 
-class ProductOfferingPrice(Lifecycle, Base):
-    __tablename__ = "product_offering_price"
-
-    id: Mapped[str] = mapped_column(primary_key=True)
-    name: Mapped[str]
-    description: Mapped[str | None]
-    price_type: Mapped[str]
-    price_value: Mapped[Decimal | None] = mapped_column(DecimalText)
-    price_unit: Mapped[str | None]
-    recurring_charge_period_type: Mapped[str | None]
-    recurring_charge_period_length: Mapped[int | None]
-    uom_amount: Mapped[Decimal | None] = mapped_column(DecimalText)
-    uom_units: Mapped[str | None]
+@dataclass(kw_only=True)
+class SpecCharacteristic:
+    name: str
+    description: str | None = None
+    value_type: str
+    values: list[str] = field(default_factory=list)
 
 
-class ProductOffering(Lifecycle, Base):
-    __tablename__ = "product_offering"
+@dataclass(kw_only=True)
+class ProductSpecification(Lifecycle):
+    collection: ClassVar[str] = "product_specification"
 
-    id: Mapped[str] = mapped_column(primary_key=True)
-    name: Mapped[str]
-    description: Mapped[str | None]
-    is_bundle: Mapped[bool] = mapped_column(default=False)
-    is_sellable: Mapped[bool] = mapped_column(default=True)
-    specification_id: Mapped[str | None] = mapped_column(
-        ForeignKey("product_specification.id")
-    )
+    id: str
+    name: str
+    description: str | None = None
+    brand: str | None = None
+    product_number: str | None = None
+    is_bundle: bool = False
+    characteristics: list[SpecCharacteristic] = field(default_factory=list)
 
-    specification: Mapped[ProductSpecification | None] = relationship()
-    categories: Mapped[list[Category]] = relationship(
-        secondary=offering_category, back_populates="offerings"
-    )
-    prices: Mapped[list[ProductOfferingPrice]] = relationship(
-        secondary=offering_price, order_by="ProductOfferingPrice.id"
-    )
+
+@dataclass(kw_only=True)
+class ProductOfferingPrice(Lifecycle):
+    collection: ClassVar[str] = "product_offering_price"
+
+    id: str
+    name: str
+    description: str | None = None
+    price_type: str
+    price_value: Decimal | None = None
+    price_unit: str | None = None
+    recurring_charge_period_type: str | None = None
+    recurring_charge_period_length: int | None = None
+    uom_amount: Decimal | None = None
+    uom_units: str | None = None
+
+
+@dataclass(kw_only=True)
+class ProductOffering(Lifecycle):
+    collection: ClassVar[str] = "product_offering"
+
+    id: str
+    name: str
+    description: str | None = None
+    is_bundle: bool = False
+    is_sellable: bool = True
+    specification_id: str | None = None
+    category_ids: list[str] = field(default_factory=list)
+    price_ids: list[str] = field(default_factory=list)
+
+    specification: ProductSpecification | None = field(default=None, metadata=TRANSIENT)
+    categories: list[Category] = field(default_factory=list, metadata=TRANSIENT)
+    prices: list[ProductOfferingPrice] = field(default_factory=list, metadata=TRANSIENT)

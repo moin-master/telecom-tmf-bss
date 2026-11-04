@@ -1,8 +1,7 @@
 from datetime import datetime, timezone
 from decimal import Decimal
 
-from sqlalchemy.orm import Session
-
+from product_catalog.repository import CatalogRepository
 from product_catalog.models import (
     Catalog,
     Category,
@@ -54,7 +53,7 @@ def _one_time(id, name, value, **common) -> ProductOfferingPrice:
     )
 
 
-def load(session: Session) -> None:
+def load(repo: CatalogRepository) -> None:
     catalog = Catalog(
         id="CAT-1001",
         name="Consumer Mobile Catalog",
@@ -63,16 +62,16 @@ def load(session: Session) -> None:
         **_common(),
     )
     plans = Category(
-        id="CATG-1001", name="Plans", is_root=True, catalog=catalog, **_common()
+        id="CATG-1001", name="Plans", is_root=True, catalog_id=catalog.id, **_common()
     )
     devices = Category(
-        id="CATG-1002", name="Devices", is_root=True, catalog=catalog, **_common()
+        id="CATG-1002", name="Devices", is_root=True, catalog_id=catalog.id, **_common()
     )
     addons = Category(
-        id="CATG-1003", name="Add-ons", is_root=True, catalog=catalog, **_common()
+        id="CATG-1003", name="Add-ons", is_root=True, catalog_id=catalog.id, **_common()
     )
     prepaid = Category(
-        id="CATG-1004", name="Prepaid", parent=plans, catalog=catalog, **_common()
+        id="CATG-1004", name="Prepaid", parent_id=plans.id, catalog_id=catalog.id, **_common()
     )
 
     plan_spec = ProductSpecification(
@@ -179,76 +178,84 @@ def load(session: Session) -> None:
         ProductOffering(
             id="PO-1001", name="Basic 5GB Plan",
             description="5 GB of data and unlimited calls",
-            specification=plan_spec, categories=[plans],
-            prices=[basic_fee, basic_old_fee, activation], **_common(),
+            specification_id=plan_spec.id, category_ids=[plans.id],
+            price_ids=[basic_fee.id, basic_old_fee.id, activation.id], **_common(),
         ),
         ProductOffering(
             id="PO-1002", name="Unlimited Plan",
             description="Unlimited data and calls",
-            specification=plan_spec, categories=[plans],
-            prices=[unlimited_fee, activation], **_common(),
+            specification_id=plan_spec.id, category_ids=[plans.id],
+            price_ids=[unlimited_fee.id, activation.id], **_common(),
         ),
         ProductOffering(
             id="PO-1003", name="Prepaid SIM Card",
             description="Nano SIM for prepaid use",
-            specification=sim_spec, categories=[prepaid, devices],
-            prices=[sim_price], **_common(),
+            specification_id=sim_spec.id, category_ids=[prepaid.id, devices.id],
+            price_ids=[sim_price.id], **_common(),
         ),
         ProductOffering(
             id="PO-1004", name="Smartphone X 128GB",
             description="128 GB smartphone",
-            specification=phone_spec, categories=[devices],
-            prices=[phone_price], **_common(),
+            specification_id=phone_spec.id, category_ids=[devices.id],
+            price_ids=[phone_price.id], **_common(),
         ),
         ProductOffering(
             id="PO-1005", name="Roaming Pack 1GB",
             description="1 GB of data while travelling",
-            specification=roaming_spec, categories=[addons],
-            prices=[roaming_price], **_common(),
+            specification_id=roaming_spec.id, category_ids=[addons.id],
+            price_ids=[roaming_price.id], **_common(),
         ),
         # Not visible to anonymous callers: retired, expired and not yet started.
         ProductOffering(
             id="PO-1006", name="Legacy 2GB Plan",
             description="Withdrawn from sale",
-            specification=plan_spec, categories=[plans],
-            prices=[legacy_fee], **_common(status="Retired"),
+            specification_id=plan_spec.id, category_ids=[plans.id],
+            price_ids=[legacy_fee.id], **_common(status="Retired"),
         ),
         ProductOffering(
             id="PO-1007", name="Summer Promo Plan",
             description="Promotion that has ended",
-            specification=plan_spec, categories=[plans],
-            prices=[promo_fee], **_common(valid_to=_utc(2026, 9, 30)),
+            specification_id=plan_spec.id, category_ids=[plans.id],
+            price_ids=[promo_fee.id], **_common(valid_to=_utc(2026, 9, 30)),
         ),
         ProductOffering(
             id="PO-1008", name="Next-Year Plan",
             description="Starts in 2027",
-            specification=plan_spec, categories=[plans],
-            prices=[future_fee], **_common(valid_from=_utc(2027, 1, 1)),
+            specification_id=plan_spec.id, category_ids=[plans.id],
+            price_ids=[future_fee.id], **_common(valid_from=_utc(2027, 1, 1)),
         ),
         ProductOffering(
             id="PO-1009", name="Smartphone X 256GB",
             description="256 GB smartphone",
-            specification=phone_spec, categories=[devices],
-            prices=[phone_x_256_price], **_common(),
+            specification_id=phone_spec.id, category_ids=[devices.id],
+            price_ids=[phone_x_256_price.id], **_common(),
         ),
         ProductOffering(
             id="PO-1010", name="Smartphone Pro 256GB",
             description="Pro smartphone with 256 GB",
-            specification=pro_spec, categories=[devices],
-            prices=[phone_pro_256_price], **_common(),
+            specification_id=pro_spec.id, category_ids=[devices.id],
+            price_ids=[phone_pro_256_price.id], **_common(),
         ),
         ProductOffering(
             id="PO-1011", name="Smartphone Pro Max 512GB",
             description="Pro smartphone with 512 GB",
-            specification=pro_spec, categories=[devices],
-            prices=[phone_pro_512_price], **_common(),
+            specification_id=pro_spec.id, category_ids=[devices.id],
+            price_ids=[phone_pro_512_price.id], **_common(),
         ),
         ProductOffering(
             id="PO-1012", name="Smartphone Lite 64GB",
             description="Entry-level smartphone",
-            specification=lite_spec, categories=[devices],
-            prices=[phone_lite_price], **_common(),
+            specification_id=lite_spec.id, category_ids=[devices.id],
+            price_ids=[phone_lite_price.id], **_common(),
         ),
     ]
 
-    session.add_all([catalog, plans, devices, addons, prepaid, *offerings])
+    repo.save_all([catalog, plans, devices, addons, prepaid, *offerings])
+    repo.save_all([plan_spec, sim_spec, phone_spec, pro_spec, lite_spec, roaming_spec])
+    repo.save_all(
+        [
+            basic_fee, basic_old_fee, unlimited_fee, activation, sim_price, phone_price,
+            roaming_price, legacy_fee, promo_fee, future_fee, phone_x_256_price,
+            phone_pro_256_price, phone_pro_512_price, phone_lite_price,
+        ]
+    )

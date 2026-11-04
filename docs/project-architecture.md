@@ -62,8 +62,8 @@ Arrows point to the module being called (service interface). Event traffic goes 
 
 +----------------------------+        +--------------------------------+
 | SUPPORT (optional)         |        | STORAGE                        |
-|  [TMF621 Trouble Ticket]   |        | SQLite, one database file per  |
-+----------------------------+        | service, never shared          |
+|  [TMF621 Trouble Ticket]   |        | Mongita, one database folder   |
++----------------------------+        | per service, never shared      |
                                       +--------------------------------+
 ```
 

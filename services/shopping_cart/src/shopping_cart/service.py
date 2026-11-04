@@ -96,8 +96,7 @@ class CartService:
         row = models.ShoppingCart(
             id=f"SC-{secrets.token_hex(6)}", creation_date=now, last_update=now
         )
-        self.repo.add(row)
-        self.repo.commit()
+        self.repo.save(row)
         return _cart(row)
 
     def get_cart(self, id: str) -> dto.ShoppingCart:
@@ -118,7 +117,7 @@ class CartService:
         else:
             cart.items.append(self._new_item(offering, quantity))
         cart.last_update = self.clock()
-        self.repo.commit()
+        self.repo.save(cart)
         return _cart(cart)
 
     def remove_item(self, cart_id: str, item_id: str) -> dto.ShoppingCart:
@@ -128,7 +127,7 @@ class CartService:
             raise NotFoundError("CartItem", item_id)
         self.repo.remove_item(cart, item)
         cart.last_update = self.clock()
-        self.repo.commit()
+        self.repo.save(cart)
         return _cart(cart)
 
     def _cart_row(self, id: str) -> models.ShoppingCart:

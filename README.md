@@ -1,6 +1,6 @@
 # Telecom BSS
 
-A proof of concept of a telecom Business Support System (BSS), built on **TM Forum Open APIs**, exposed through **GraphQL**, and stored in **SQLite**.
+A proof of concept of a telecom Business Support System (BSS), built on **TM Forum Open APIs**, exposed through **GraphQL**, and stored in **Mongita** (embedded document database).
 
 Status: **planning only. No code yet.**
 
@@ -18,7 +18,7 @@ A single GraphQL query should be able to read across all of it (a "customer 360"
 ## Planned stack
 
 - Python 3.12+, FastAPI, Strawberry (GraphQL)
-- SQLAlchemy with SQLite (swappable to a real database later)
+- Mongita, an embedded MongoDB-style document database (swappable to MongoDB later)
 - Layers: GraphQL resolver -> service -> repository
 
 Full list in [docs/project-tech-stack.md](docs/project-tech-stack.md).

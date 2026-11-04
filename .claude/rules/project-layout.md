@@ -12,7 +12,7 @@ host/
   src/bss_host/combined.py  customer 360 schema, calls services through their clients (later)
 shared/
   pyproject.toml            project bss-shared
-  src/bss_shared/           config (BSS_*), clock, db helpers (UtcDateTime, DecimalText, sqlite_url),
+  src/bss_shared/           config (BSS_*), clock, db helpers (Mongita client, Decimal and UTC datetime encoding),
                             errors (TmfError), pagination, graphql (DtoConverter: DTO -> Strawberry type);
                             event bus later
 services/<name>/            <name> is the module name from docs/project-routing.md
@@ -20,7 +20,7 @@ services/<name>/            <name> is the module name from docs/project-routing.
   src/<pkg>/                <pkg> = <name> with hyphens replaced by underscores
     app.py                  create_app() returning the ASGI app; calls init_db() (mounted apps skip lifespan)
     db.py                   engine, SessionLocal, init_db() (create tables, seed when empty)
-    models.py               SQLAlchemy tables, owned by this service (own Base per service)
+    models.py               collection names and document mapping, owned by this service
     repository.py           only place that touches the session
     service.py              business rules and state machine; maps rows to DTOs
     dto.py                  plain dataclasses returned by service and client (no ORM objects)
@@ -28,7 +28,7 @@ services/<name>/            <name> is the module name from docs/project-routing.
     schema.py               Strawberry types, inputs, resolvers
     events.py               signals this service publishes (when it has any)
     seed.py                 seed data
-  data/<name>.db            SQLite file (gitignored)
+  data/<name>/              Mongita database folder (gitignored)
 web/                        React + TypeScript UI (Vite), see .claude/rules/web-code.md
   src/api/                  GraphQL client, <service>/*.graphql operations, generated types
   src/pages/, components/, hooks/, lib/, styles/, data/

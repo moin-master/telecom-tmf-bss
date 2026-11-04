@@ -4,7 +4,7 @@ Status: **draft for discussion**. Items marked *proposed* or *open* are not yet 
 
 ## 1. Goal
 
-Build a proof of concept that implements a realistic telecom order-to-cash scenario using TM Forum Open API resource models, served over GraphQL, with SQLite as storage. The result should be understandable end to end and structured so it can later grow into a real application.
+Build a proof of concept that implements a realistic telecom order-to-cash scenario using TM Forum Open API resource models, served over GraphQL, with Mongita (embedded document database) as storage. The result should be understandable end to end and structured so it can later grow into a real application.
 
 ## 2. Why GraphQL on top of TM Forum APIs
 
@@ -48,17 +48,17 @@ The exact resources and fields will be confirmed by reading the specifications i
 
 ## 5. Architecture (proposed)
 
-A **workspace-hosted set of services**: one separate Python project per TM Forum domain (a `uv` workspace), each with its own code, SQLite database and GraphQL schema. A thin host app mounts every service under its own path, so everything runs as one process on one port. A combined schema at `/graphql` serves the customer 360 query.
+A **workspace-hosted set of services**: one separate Python project per TM Forum domain (a `uv` workspace), each with its own code, Mongita database and GraphQL schema. A thin host app mounts every service under its own path, so everything runs as one process on one port. A combined schema at `/graphql` serves the customer 360 query.
 
 Services call each other through a small client interface per service. Today the client calls the other service's code in the same process; later it can make an HTTP call without changing the callers.
 
-The technologies used (Python, GraphQL, SQLite and the rest) are listed in [project-tech-stack.md](project-tech-stack.md).
+The technologies used (Python, GraphQL, Mongita and the rest) are listed in [project-tech-stack.md](project-tech-stack.md).
 
 Module rules, the service block diagram, dependencies and event flow are in [project-architecture.md](project-architecture.md).
 
 Path to a real application:
 
-- SQLite to a production database (for example PostgreSQL) through configuration, since SQLAlchemy abstracts the engine.
+- Mongita to MongoDB, since Mongita uses the MongoDB API; only the repository layer changes.
 - A service replaced by calls to a real TM Forum service, with the GraphQL schema unchanged.
 - A service run in its own process on its own port, with a reverse proxy keeping the public URLs and the client interface switched to HTTP.
 
@@ -73,6 +73,6 @@ Alternatives considered: a single-package modular monolith (simplest, but servic
 | Billing | simple: monthly recurring charges plus usage; no tax, proration or discounts initially |
 | Money and time | `decimal.Decimal` for amounts, timezone-aware `datetime` (UTC) for timestamps |
 | Billing cycle trigger | an on-demand mutation (for example `runBillingCycle`) before any scheduler |
-| Storage | one SQLite file per service so data survives restarts; seed data in SQL scripts or a Python seed module per service |
+| Storage | one Mongita database folder per service so data survives restarts; seed data in a Python seed module per service |
 | Polymorphism (`@type`), reference objects (`href`), free-form values, PATCH semantics | one agreed policy per issue, written down once |
 | Scope creep | fixed slice order below |

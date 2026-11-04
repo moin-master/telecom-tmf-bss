@@ -6,7 +6,7 @@ requires-python = ">=3.12"
 dependencies = [
     "bss-shared",
     "fastapi>=0.115",
-    "sqlalchemy>=2.0",
+    "mongita>=1.2",
     "strawberry-graphql[fastapi]>=0.240",
 ]
 
