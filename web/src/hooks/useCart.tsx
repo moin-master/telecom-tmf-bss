@@ -6,6 +6,7 @@ import {
   CartDocument,
   CreateCartDocument,
   RemoveCartItemDocument,
+  UpdateCartItemDocument,
   type CartFieldsFragment,
 } from '../api/generated/shopping-cart/graphql'
 import { apiError } from '../lib/errors'
@@ -35,9 +36,10 @@ type CartContextValue = {
   count: number
   loading: boolean
   add: (offering: { id: string; name: string }, quantity?: number, choice?: CartChoice) => Promise<void>
+  update: (itemId: string, quantity: number, choice?: CartChoice) => Promise<void>
   remove: (itemId: string) => Promise<void>
   busy: boolean
-  lastAdded: { name: string; n: number } | null
+  lastAdded: { name: string; n: number; kind: 'added' | 'updated' } | null
 }
 
 const CartContext = createContext<CartContextValue | null>(null)
@@ -111,7 +113,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
       queryClient.setQueryData(['cart', id], cart)
       // The "added" message shows for a moment, then clears itself.
       const n = Date.now()
-      setLastAdded({ name: offering.name, n })
+      setLastAdded({ name: offering.name, n, kind: 'added' })
+      window.setTimeout(() => setLastAdded((current) => (current?.n === n ? null : current)), 2600)
+    },
+  })
+
+  const updateMutation = useMutation({
+    mutationFn: ({ itemId, quantity, choice }: { itemId: string; quantity: number; choice?: CartChoice }) =>
+      cartApi.request(UpdateCartItemDocument, {
+        cartId: cartId!,
+        cartItemId: itemId,
+        quantity,
+        purchaseOption: choice?.option ?? null,
+        contractMonths: choice?.contractMonths ?? null,
+        launchOffer: choice?.launchOffer ?? null,
+      }),
+    onSuccess: (data, { itemId }) => {
+      queryClient.setQueryData(['cart', cartId], data.updateCartItem)
+      const name = data.updateCartItem.cartItem.find((i) => i.id === itemId)?.productOffering.name ?? 'Offer'
+      const n = Date.now()
+      setLastAdded({ name, n, kind: 'updated' })
       window.setTimeout(() => setLastAdded((current) => (current?.n === n ? null : current)), 2600)
     },
   })
@@ -130,10 +151,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     add: async (offering, quantity = 1, choice) => {
       await addMutation.mutateAsync({ offering, quantity, choice })
     },
+    update: async (itemId, quantity, choice) => {
+      await updateMutation.mutateAsync({ itemId, quantity, choice })
+    },
     remove: async (itemId) => {
       await removeMutation.mutateAsync(itemId)
     },
-    busy: addMutation.isPending || removeMutation.isPending,
+    busy: addMutation.isPending || updateMutation.isPending || removeMutation.isPending,
     lastAdded,
   }
 

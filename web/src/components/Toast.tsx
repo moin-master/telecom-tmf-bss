@@ -11,7 +11,7 @@ export function Toast() {
           <span className="toast__check" aria-hidden="true">
             ✓
           </span>
-          Added to cart · <b>{lastAdded.name}</b>
+          {lastAdded.kind === 'updated' ? 'Updated in cart' : 'Added to cart'} · <b>{lastAdded.name}</b>
         </p>
       )}
     </div>

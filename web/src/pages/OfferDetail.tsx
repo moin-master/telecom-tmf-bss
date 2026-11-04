@@ -1,25 +1,14 @@
-import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { AddToCartButton } from '../components/AddToCartButton'
-import { BundleDeals } from '../components/BundleDeals'
-import { ProtectionAddOn } from '../components/ProtectionAddOn'
-import { PurchaseOptions } from '../components/PurchaseOptions'
+import { OfferInfo } from '../components/OfferInfo'
+import { PricePanel } from '../components/PricePanel'
 import { ErrorState, StateCard } from '../components/StateViews'
 import { useOffer } from '../hooks/useOffers'
 import { apiError } from '../lib/errors'
-import { humanize, money, perLabel } from '../lib/format'
-import { optionsOf, pricesFor, type PurchaseOption } from '../lib/purchase'
-import { offerEmoji, offerTheme } from '../lib/theme'
-
-const MAX_QUANTITY = 99
+import { offerTheme } from '../lib/theme'
 
 export function OfferDetail() {
   const { id = '' } = useParams()
   const offer = useOffer(id)
-  const [quantity, setQuantity] = useState(1)
-  const [option, setOption] = useState<PurchaseOption>('own')
-  const [withAddOn, setWithAddOn] = useState(false)
-  const [deal, setDeal] = useState<{ contractMonths?: number; launchOffer?: string }>({})
 
   if (offer.isPending) {
     return (
@@ -54,11 +43,6 @@ export function OfferDetail() {
 
   const data = offer.data
   const theme = offerTheme(data.category)
-  const specs = data.productSpecification?.productSpecCharacteristic ?? []
-  const addOn = data.productOfferingRelationship.find((r) => r.relationshipType === 'addOn')
-  const available = optionsOf(data.productOfferingPrice)
-  const hasOptions = available.length > 0
-  const prices = hasOptions ? pricesFor(data.productOfferingPrice, option) : data.productOfferingPrice.filter((p) => p.price)
 
   return (
     <div className="wrap detail" data-theme={theme.key}>
@@ -67,105 +51,9 @@ export function OfferDetail() {
       </nav>
 
       <div className="detail__grid">
-        <div className="detail__art">
-          <span className="offer__tag">{theme.label}</span>
-          <span className="detail__emoji" aria-hidden="true">
-            {offerEmoji(data.name, theme)}
-          </span>
-          {specs.slice(0, 3).map((s, i) => (
-            <span key={s.name} className={`float float--${i}`} aria-hidden="true">
-              {humanize(s.name)} · {s.values.join(' / ')}
-            </span>
-          ))}
-        </div>
-
-        <div className="detail__info">
-          <p className="kicker">{data.productSpecification?.brand ?? 'vibe exclusive'}</p>
-          <h1 className="detail__title">{data.name}</h1>
-          {data.description && <p className="detail__desc">{data.description}</p>}
-
-          {data.bundledProductOffering.length > 0 && (
-            <>
-              <h2 className="detail__h">Includes</h2>
-              <ul className="chips chips--names" aria-label="includes">
-                {data.bundledProductOffering.map((b) => (
-                  <li key={b.id}>
-                    <Link to={`/offers/${b.id}`}>{b.name}</Link>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-
-          {hasOptions && <PurchaseOptions available={available} value={option} onChange={setOption} />}
-
-          <h2 className="detail__h">Pricing</h2>
-          <ul className="tickets">
-            {prices.map((p) => (
-              <li key={p.id} className="ticket">
-                <span className="ticket__name">
-                  {p.name}
-                  <small>
-                    {p.priceType === 'recurring' ? `Every ${p.recurringChargePeriodType ?? 'period'}` : 'One time'}
-                  </small>
-                </span>
-                <b className="ticket__amount">
-                  {money(p.price!.unit, p.price!.value)}
-                  <small>{perLabel(p.recurringChargePeriodType)}</small>
-                </b>
-              </li>
-            ))}
-          </ul>
-
-          {specs.length > 0 && (
-            <>
-              <h2 className="detail__h">Specs</h2>
-              <dl className="specs-list">
-                {specs.map((s) => (
-                  <div key={s.name}>
-                    <dt>{humanize(s.name)}</dt>
-                    <dd>{s.values.join(' / ')}</dd>
-                  </div>
-                ))}
-              </dl>
-            </>
-          )}
-
-          {data.isBundle && (
-            <BundleDeals links={data.productOfferingRelationship} option={option} onChange={setDeal} />
-          )}
-
-          {addOn && <ProtectionAddOn offerId={addOn.id} checked={withAddOn} onChange={setWithAddOn} />}
-
-          <div className="buy">
-            <div className="stepper" role="group" aria-label="Quantity">
-              <button
-                type="button"
-                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                disabled={quantity <= 1}
-                aria-label="One less"
-              >
-                −
-              </button>
-              <output aria-live="polite">{quantity}</output>
-              <button
-                type="button"
-                onClick={() => setQuantity((q) => Math.min(MAX_QUANTITY, q + 1))}
-                disabled={quantity >= MAX_QUANTITY}
-                aria-label="One more"
-              >
-                +
-              </button>
-            </div>
-            <AddToCartButton
-              offering={data}
-              quantity={quantity}
-              choice={hasOptions ? { option, ...deal } : undefined}
-              extras={addOn && withAddOn ? [addOn] : []}
-              sellable={data.isSellable}
-            />
-          </div>
-        </div>
+        <OfferInfo offer={data} />
+        {/* Keyed by offer so choices never carry over from another offer. */}
+        <PricePanel key={data.id} offer={data} />
       </div>
     </div>
   )

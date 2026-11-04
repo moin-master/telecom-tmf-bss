@@ -682,3 +682,151 @@
   font-size: 0.85rem;
   text-align: center;
 }
+
+/* ---------- offer page: details on the left, price and bill on the right ---------- */
+.detail__left {
+  min-width: 0;
+}
+.detail__left .detail__art {
+  position: relative;
+  top: auto;
+  min-height: 300px;
+  margin-bottom: 1.4rem;
+}
+@media (min-width: 880px) {
+  .detail__grid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  }
+  .detail__left {
+    position: sticky;
+    top: 96px;
+  }
+}
+.panel {
+  min-width: 0;
+  padding: 1.4rem;
+  border: 1px solid var(--line);
+  border-radius: 26px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.panel__title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+.panel__section {
+  margin-top: 1.1rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--line);
+}
+.panel__section:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
+.panel__h {
+  margin-bottom: 0.6rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.panel__select {
+  display: grid;
+  gap: 0.3rem;
+  margin-top: 0.7rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.panel__select select {
+  min-height: 44px;
+  padding: 0 0.7rem;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+.panel .options {
+  margin: 0;
+}
+.panel .options + .options,
+.panel .options + .contract {
+  margin-top: 0.8rem;
+}
+.options--two .options__row {
+  grid-template-columns: 1fr 1fr;
+}
+.panel .buy {
+  margin-top: 1.4rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--line);
+}
+.panel .buy .add {
+  flex: 1 1 200px;
+}
+.panel .buy .add .btn {
+  width: 100%;
+}
+.contract {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.1rem 0.8rem;
+  padding: 0.7rem 0.85rem;
+  border: 1.5px dashed var(--line-strong);
+  border-radius: 14px;
+}
+.contract.is-on {
+  border-style: solid;
+  border-color: var(--ink);
+  background: var(--lemon);
+  color: var(--ink);
+}
+.contract__title {
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+.contract__state {
+  font-weight: 800;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+.contract__hint {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.contract.is-on .contract__hint {
+  color: var(--ink);
+}
+.deal-note {
+  margin-top: 0.7rem;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+.deal-note b {
+  color: var(--text);
+}
+.bill {
+  display: grid;
+  gap: 0.7rem;
+  transition: opacity 0.15s;
+}
+.bill.is-updating {
+  opacity: 0.6;
+}
+.bill__skeleton {
+  min-height: 160px;
+  border-radius: 14px;
+  background: var(--band);
+}
+.bill__note {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bill {
+    transition: none;
+  }
+}

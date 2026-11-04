@@ -2,7 +2,9 @@ import { useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import type { OffersQuery } from '../api/generated/product-catalog/graphql'
 import { headlinePrice, humanize, money, otherPrices, perLabel } from '../lib/format'
-import { optionsOf, preview, pricesFor, type PurchaseOption } from '../lib/purchase'
+import { useQuote } from '../hooks/useQuote'
+import { amount } from '../lib/cart'
+import { optionsOf, pricesFor, type PurchaseOption } from '../lib/purchase'
 import { offerEmoji, offerTheme } from '../lib/theme'
 import { AddToCartButton } from './AddToCartButton'
 import { ProtectionAddOn } from './ProtectionAddOn'
@@ -20,7 +22,11 @@ export function OfferCard({ offer, index }: { offer: Offer; index: number }) {
   const prices = hasOptions ? pricesFor(offer.productOfferingPrice, option) : offer.productOfferingPrice
   const headline = headlinePrice(prices)
   const extras = otherPrices(prices, headline)
-  const sum = hasOptions ? preview(prices) : null
+  // Bundles show the bill for the chosen option, priced by the backend with the default launch offer.
+  const quote = useQuote(offer.id, 1, { option }, hasOptions && offer.isSellable)
+  const bill = hasOptions ? quote.data : undefined
+  const dueToday = bill?.itemSubtotal.find((t) => t.priceType === 'oneTime')
+  const monthly = bill?.itemSubtotal.filter((t) => t.priceType === 'recurring') ?? []
   const specs = offer.productSpecification?.productSpecCharacteristic ?? []
   const includes = offer.bundledProductOffering
 
@@ -60,25 +66,26 @@ export function OfferCard({ offer, index }: { offer: Offer; index: number }) {
         {hasOptions && <PurchaseOptions available={available} value={option} onChange={setOption} compact />}
 
         <div className="offer__price">
-          {sum && (
+          {bill && (
             <dl className="offer__split">
               <div>
                 <dt>Due today</dt>
-                <dd>{money(sum.unit, sum.today)}</dd>
+                <dd>{dueToday ? amount(dueToday) : '—'}</dd>
               </div>
               <div>
                 <dt>Every month</dt>
-                <dd>{money(sum.unit, sum.monthly)}</dd>
+                <dd>{monthly[0] ? amount(monthly[0]) : '—'}</dd>
+                {monthly.length > 1 && <small>then {amount(monthly[monthly.length - 1])}</small>}
               </div>
             </dl>
           )}
-          {!sum && headline?.price && (
+          {!hasOptions && headline?.price && (
             <p className="offer__amount">
               <strong>{money(headline.price.unit, headline.price.value)}</strong>
               <span>{perLabel(headline.recurringChargePeriodType)}</span>
             </p>
           )}
-          {!sum && extras.length > 0 && (
+          {!hasOptions && extras.length > 0 && (
             <ul className="offer__fees">
               {extras.map((p) => (
                 <li key={p.id}>
