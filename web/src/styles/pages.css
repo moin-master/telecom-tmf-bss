@@ -485,14 +485,80 @@
   text-decoration: underline;
   text-underline-offset: 4px;
 }
-.line__prices {
-  margin-top: 0.3rem;
+.line__includes {
+  margin-top: 0.35rem;
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
 }
-.line__prices b {
+.line__includes span {
   color: var(--text);
-  font-weight: 600;
+  font-weight: 700;
+}
+/* Charges sit under the header and span the full width of the card. */
+.line__charges {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.8rem;
+}
+.charges {
+  padding: 0.8rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--band);
+}
+.charges__title {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.charges__hint {
+  margin: 0.1rem 0 0.55rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.charges__rows {
+  display: grid;
+  gap: 0.3rem;
+}
+.charges__rows li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+.charges__rows b {
+  flex: none;
+  color: var(--text);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.charges__rows li.is-credit span::before {
+  content: '🏷️ ';
+}
+.charges__totals {
+  margin-top: 0.6rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--line-strong);
+  display: grid;
+  gap: 0.15rem;
+}
+.charges__totals div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+  align-items: baseline;
+}
+.charges__totals dt {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.charges__totals dd {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }
 .line__side {
@@ -536,7 +602,7 @@
 .receipt__totals {
   display: grid;
   gap: 0.2rem;
-  margin: 1.2rem 0 1.4rem;
+  margin: 0.6rem 0 0;
 }
 .receipt__totals div {
   display: flex;
@@ -554,13 +620,61 @@
   font-weight: 600;
 }
 .receipt__totals dd {
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   font-weight: 800;
   letter-spacing: -0.035em;
   font-variant-numeric: tabular-nums;
 }
+.receipt__section {
+  margin-top: 1.1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+.receipt__heading {
+  font-size: 1rem;
+  font-weight: 800;
+}
+.receipt__sub {
+  margin: 0.15rem 0 0.7rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.receipt__group {
+  margin-bottom: 0.7rem;
+}
+.receipt__item {
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+.receipt__item span {
+  color: var(--muted);
+  font-weight: 600;
+}
+.receipt__lines {
+  display: grid;
+  gap: 0.25rem;
+  margin-top: 0.3rem;
+}
+.receipt__lines li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+.receipt__lines b {
+  flex: none;
+  color: var(--text);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+/* Credits and waivers read as savings: a mark as well as the minus sign, not colour alone. */
+.receipt__lines li.is-credit span::before {
+  content: '🏷️ ';
+}
 .receipt__checkout {
   width: 100%;
+  margin-top: 1.2rem;
 }
 .receipt__note {
   margin-top: 0.9rem;

@@ -1,11 +1,22 @@
 """The only module other services import. In-process today; an HTTP version can replace it later."""
 
 from product_catalog.db import database, init_db
-from product_catalog.dto import ProductOffering, ProductOfferingPrice
+from product_catalog.dto import (
+    ProductOffering,
+    ProductOfferingPrice,
+    ProductOfferingTerm,
+    Relationship,
+)
 from product_catalog.repository import CatalogRepository
 from product_catalog.service import CatalogService
 
-__all__ = ["ProductCatalogClient", "ProductOffering", "ProductOfferingPrice"]
+__all__ = [
+    "ProductCatalogClient",
+    "ProductOffering",
+    "ProductOfferingPrice",
+    "ProductOfferingTerm",
+    "Relationship",
+]
 
 _ready = False
 

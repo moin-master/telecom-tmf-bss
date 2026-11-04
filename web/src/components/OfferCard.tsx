@@ -97,7 +97,7 @@ export function OfferCard({ offer, index }: { offer: Offer; index: number }) {
 
         <AddToCartButton
           offering={offer}
-          option={hasOptions ? option : undefined}
+          choice={hasOptions ? { option } : undefined}
           extras={addOn && withAddOn ? [addOn] : []}
           sellable={offer.isSellable}
         />

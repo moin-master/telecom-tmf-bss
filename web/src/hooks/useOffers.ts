@@ -14,7 +14,8 @@ export function useOffers(filter: OfferFilter) {
       catalogApi.request(OffersDocument, {
         offset: pageParam,
         limit: PAGE_SIZE,
-        filter: { name: filter.name || null, categoryId: filter.categoryId || null },
+        // Promotions are applied by the cart; they are not shown as products.
+        filter: { name: filter.name || null, categoryId: filter.categoryId || null, isSellable: true },
       }),
     getNextPageParam: (last, all) =>
       last.productOfferingList.length < PAGE_SIZE ? undefined : all.length * PAGE_SIZE,
@@ -26,6 +27,7 @@ export function useOffer(id: string) {
   return useQuery({
     queryKey: ['offer', id],
     queryFn: () => catalogApi.request(OfferDocument, { id }).then((r) => r.productOffering),
+    enabled: !!id,
     retry: false,
   })
 }

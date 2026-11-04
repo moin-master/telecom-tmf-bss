@@ -5,12 +5,25 @@ from typing import Callable
 
 from bss_shared.clock import utcnow
 from bss_shared.errors import BadRequestError, NotFoundError
-from product_catalog.client import ProductCatalogClient, ProductOfferingPrice
+from product_catalog.client import (
+    ProductCatalogClient,
+    ProductOffering,
+    ProductOfferingPrice,
+)
 from shopping_cart import dto, models
 from shopping_cart.repository import CartRepository
 
 MAX_QUANTITY = 99
 DEFAULT_OPTION = "own"
+CENT = Decimal("0.01")
+
+# How a bundle points to its promotions (productOfferingRelationship types).
+LAUNCH_OFFER = "launchOffer"
+ACTIVATION_WAIVER = "activationWaiver"
+MULTI_BUNDLE = "multiBundleDiscount"
+CONTRACT = "contract"
+
+_OPTION_NAMES = {"own": "Own it", "tradeIn": "Trade-in", "finance": "Finance"}
 
 
 def _recurring_period(price: ProductOfferingPrice) -> str | None:
@@ -35,6 +48,7 @@ def _item(row: models.CartItem) -> dto.CartItem:
         quantity=row.quantity,
         product_offering=dto.Ref(row.offering_id, row.offering_name),
         purchase_option=row.purchase_option,
+        contract_months=row.contract_months,
         item_price=[
             _cart_price(p.name, p.price_type, p.recurring_period, p.unit, p.amount)
             for p in row.prices
@@ -45,40 +59,82 @@ def _item(row: models.CartItem) -> dto.CartItem:
             )
             for p in row.prices
         ],
+        item_subtotal=_totals([row], None),
     )
 
 
-def _totals(items: list[models.CartItem]) -> list[dto.CartPrice]:
-    """One total per price type, recurring period and currency; saved-for-later items excluded."""
-    sums: dict[tuple, Decimal] = {}
+def _bundle_count(items: list[models.CartItem]) -> int:
+    return sum(i.quantity for i in items if i.is_bundle and i.status == "active")
+
+
+def _recurring_totals(period: str, unit: str, amounts: dict[int | None, Decimal]):
+    """Regular fees plus time-limited discounts, split into the periods where the total changes."""
+    base = amounts.get(None, Decimal(0))
+    limited = {m: v for m, v in amounts.items() if m}
+    if not limited:
+        return [(f"Total per {period}", base)]
+    totals, previous = [], 0
+    for months in sorted(limited):
+        window = base + sum(v for m, v in limited.items() if m >= months)
+        span = f"first {months} months" if previous == 0 else f"months {previous + 1} to {months}"
+        totals.append((f"Total per {period}, {span}", window))
+        previous = months
+    totals.append((f"Total per {period}, after {previous} months", base))
+    return [(name, amount) for name, amount in totals]
+
+
+def _totals(
+    items: list[models.CartItem], discount: models.CartDiscount | None
+) -> list[dto.CartPrice]:
+    """Totals for the active items; saved-for-later items are excluded.
+
+    One-time first, then each recurring period and currency. When a time-limited
+    discount applies, the recurring total is split into "first N months" and "after".
+    """
+    one_time: dict[str, Decimal] = {}
+    recurring: dict[tuple[str, str], dict[int | None, Decimal]] = {}
     for item in items:
         if item.status != "active":
             continue
         for p in item.prices:
-            key = (p.price_type, p.recurring_period, p.unit)
-            sums[key] = sums.get(key, Decimal(0)) + p.amount * item.quantity
-    return [
-        _cart_price(
-            "Total one-time" if price_type == "oneTime" else f"Total per {period}",
-            price_type,
-            period,
-            unit,
-            amount,
-        )
-        for (price_type, period, unit), amount in sorted(
-            sums.items(), key=lambda kv: (kv[0][0], kv[0][1] or "", kv[0][2])
-        )
+            amount = p.amount * item.quantity
+            if p.price_type == "oneTime":
+                one_time[p.unit] = one_time.get(p.unit, Decimal(0)) + amount
+            else:
+                bucket = recurring.setdefault((p.recurring_period or "", p.unit), {})
+                bucket[p.months] = bucket.get(p.months, Decimal(0)) + amount
+    if discount:
+        bucket = recurring.setdefault(("month", discount.unit), {})
+        bucket[None] = bucket.get(None, Decimal(0)) + discount.amount
+
+    totals = [
+        _cart_price("Total one-time", "oneTime", None, unit, amount)
+        for unit, amount in sorted(one_time.items())
     ]
+    for (period, unit), amounts in sorted(recurring.items()):
+        for name, amount in _recurring_totals(period, unit, amounts):
+            totals.append(_cart_price(name, "recurring", period, unit, amount))
+    return totals
 
 
 def _cart(row: models.ShoppingCart) -> dto.ShoppingCart:
+    discount = row.bundle_discount if _bundle_count(row.items) >= 2 else None
+    lines = []
+    if discount:
+        lines.append(
+            _cart_price(discount.name, "discount", "month", discount.unit, discount.amount)
+        )
     return dto.ShoppingCart(
         id=row.id,
         creation_date=row.creation_date,
         last_update=row.last_update,
         cart_item=[_item(i) for i in row.items],
-        cart_total_price=_totals(row.items),
+        cart_total_price=lines + _totals(row.items, discount),
     )
+
+
+def _related(offering: ProductOffering, kind: str):
+    return [r for r in offering.product_offering_relationship if r.relationship_type == kind]
 
 
 class CartService:
@@ -110,6 +166,8 @@ class CartService:
         offering_id: str,
         quantity: int,
         purchase_option: str | None = None,
+        contract_months: int | None = None,
+        launch_offer: str | None = None,
     ) -> dto.ShoppingCart:
         self._check_quantity(quantity)
         cart = self._cart_row(cart_id)
@@ -119,11 +177,16 @@ class CartService:
             raise BadRequestError(f"ProductOffering {offering_id} is not sellable")
 
         option = self._purchase_option(offering, purchase_option)
+        contract = self._contract(offering, option, contract_months)
+        launch = self._launch_offer(offering, launch_offer)
         existing = next(
             (
                 i
                 for i in cart.items
-                if i.offering_id == offering_id and i.purchase_option == option
+                if i.offering_id == offering_id
+                and i.purchase_option == option
+                and i.contract_months == contract
+                and i.launch_offer_id == (launch.id if launch else None)
             ),
             None,
         )
@@ -131,7 +194,9 @@ class CartService:
             self._check_quantity(existing.quantity + quantity)
             existing.quantity += quantity
         else:
-            cart.items.append(self._new_item(offering, quantity, option))
+            cart.items.append(self._new_item(offering, quantity, option, contract, launch))
+        if offering.is_bundle and cart.bundle_discount is None:
+            cart.bundle_discount = self._bundle_discount(offering)
         cart.last_update = self.clock()
         self.repo.save(cart)
         return _cart(cart)
@@ -142,6 +207,8 @@ class CartService:
         if item is None:
             raise NotFoundError("CartItem", item_id)
         self.repo.remove_item(cart, item)
+        if _bundle_count(cart.items) < 2:
+            cart.bundle_discount = None
         cart.last_update = self.clock()
         self.repo.save(cart)
         return _cart(cart)
@@ -178,23 +245,131 @@ class CartService:
             )
         return option
 
-    @staticmethod
-    def _new_item(offering, quantity: int, option: str | None) -> models.CartItem:
+    def _contract(
+        self, offering: ProductOffering, option: str | None, months: int | None
+    ) -> int | None:
+        """Checks the contract term against the offering and the purchase option."""
+        if months is None:
+            return None
+        links = _related(offering, CONTRACT)
+        if not links:
+            raise BadRequestError(f"ProductOffering {offering.id} has no contract")
+        term = next(
+            (
+                t
+                for t in self.catalog.get_offering(links[0].id).product_offering_term
+                if t.duration.amount == months
+            ),
+            None,
+        )
+        if term is None:
+            raise BadRequestError(f"contractMonths {months} is not offered")
+        if term.available_with and option not in term.available_with:
+            names = " or ".join(_OPTION_NAMES.get(o, o) for o in term.available_with)
+            raise BadRequestError(f"The {term.name} needs {names}")
+        return months
+
+    def _launch_offer(
+        self, offering: ProductOffering, requested: str | None
+    ) -> ProductOffering | None:
+        """The 6-month discount to apply: the one asked for, else the first the bundle lists."""
+        ids = [r.id for r in _related(offering, LAUNCH_OFFER)]
+        if not ids:
+            if requested:
+                raise BadRequestError(f"ProductOffering {offering.id} has no launch offers")
+            return None
+        chosen = requested or ids[0]
+        if chosen not in ids:
+            raise BadRequestError(f"launchOffer must be one of {', '.join(ids)}")
+        return self.catalog.get_offering(chosen)
+
+    def _bundle_discount(self, offering: ProductOffering) -> models.CartDiscount | None:
+        """Copied from the catalog the first time the cart holds a bundle; applies from two bundles."""
+        links = _related(offering, MULTI_BUNDLE)
+        if not links:
+            return None
+        promo = self.catalog.get_offering(links[0].id)
+        price = next((p.price for p in promo.product_offering_price if p.price), None)
+        return models.CartDiscount(name=promo.name, unit=price.unit, amount=price.value) if price else None
+
+    def _new_item(
+        self,
+        offering: ProductOffering,
+        quantity: int,
+        option: str | None,
+        contract: int | None,
+        launch: ProductOffering | None,
+    ) -> models.CartItem:
+        prices = [
+            models.CartItemPrice(
+                name=p.name,
+                price_type=p.price_type,
+                recurring_period=_recurring_period(p),
+                unit=p.price.unit,
+                amount=p.price.value,
+            )
+            for p in offering.product_offering_price
+            if p.price is not None and p.purchase_option in (None, option)
+        ]
+        if launch:
+            prices += self._launch_lines(offering, launch)
+        if contract:
+            prices += self._waiver_lines(offering)
         return models.CartItem(
             id=f"CI-{secrets.token_hex(4)}",
             offering_id=offering.id,
             offering_name=offering.name,
             quantity=quantity,
             purchase_option=option,
-            prices=[
-                models.CartItemPrice(
-                    name=p.name,
-                    price_type=p.price_type,
-                    recurring_period=_recurring_period(p),
-                    unit=p.price.unit,
-                    amount=p.price.value,
-                )
-                for p in offering.product_offering_price
-                if p.price is not None and p.purchase_option in (None, option)
-            ],
+            is_bundle=offering.is_bundle,
+            contract_months=contract,
+            launch_offer_id=launch.id if launch else None,
+            prices=prices,
         )
+
+    @staticmethod
+    def _launch_lines(offering: ProductOffering, launch: ProductOffering) -> list[models.CartItemPrice]:
+        """A negative recurring line that lasts as long as the promotion's term."""
+        discount = next((p for p in launch.product_offering_price), None)
+        fee = next(
+            (
+                p
+                for p in offering.product_offering_price
+                if p.price and p.price_type == "recurring" and p.purchase_option is None
+            ),
+            None,
+        )
+        if discount is None or fee is None:
+            return []
+        if discount.percentage is not None:
+            amount = -(fee.price.value * discount.percentage / 100).quantize(CENT)
+            unit = fee.price.unit
+        elif discount.price is not None:
+            amount, unit = discount.price.value, discount.price.unit
+        else:
+            return []
+        months = launch.product_offering_term[0].duration.amount if launch.product_offering_term else None
+        return [
+            models.CartItemPrice(
+                name=launch.name,
+                price_type="recurring",
+                recurring_period=_recurring_period(fee),
+                unit=unit,
+                amount=amount,
+                months=months,
+            )
+        ]
+
+    def _waiver_lines(self, offering: ProductOffering) -> list[models.CartItemPrice]:
+        links = _related(offering, ACTIVATION_WAIVER)
+        if not links:
+            return []
+        promo = self.catalog.get_offering(links[0].id)
+        price = next((p.price for p in promo.product_offering_price if p.price), None)
+        if price is None:
+            return []
+        return [
+            models.CartItemPrice(
+                name=promo.name, price_type="oneTime", unit=price.unit, amount=price.value
+            )
+        ]

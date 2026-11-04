@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { AddToCartButton } from '../components/AddToCartButton'
+import { BundleDeals } from '../components/BundleDeals'
 import { ProtectionAddOn } from '../components/ProtectionAddOn'
 import { PurchaseOptions } from '../components/PurchaseOptions'
 import { ErrorState, StateCard } from '../components/StateViews'
@@ -18,6 +19,7 @@ export function OfferDetail() {
   const [quantity, setQuantity] = useState(1)
   const [option, setOption] = useState<PurchaseOption>('own')
   const [withAddOn, setWithAddOn] = useState(false)
+  const [deal, setDeal] = useState<{ contractMonths?: number; launchOffer?: string }>({})
 
   if (offer.isPending) {
     return (
@@ -129,6 +131,10 @@ export function OfferDetail() {
             </>
           )}
 
+          {data.isBundle && (
+            <BundleDeals links={data.productOfferingRelationship} option={option} onChange={setDeal} />
+          )}
+
           {addOn && <ProtectionAddOn offerId={addOn.id} checked={withAddOn} onChange={setWithAddOn} />}
 
           <div className="buy">
@@ -154,7 +160,7 @@ export function OfferDetail() {
             <AddToCartButton
               offering={data}
               quantity={quantity}
-              option={hasOptions ? option : undefined}
+              choice={hasOptions ? { option, ...deal } : undefined}
               extras={addOn && withAddOn ? [addOn] : []}
               sellable={data.isSellable}
             />

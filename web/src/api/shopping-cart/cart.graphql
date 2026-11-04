@@ -5,6 +5,7 @@ fragment CartFields on ShoppingCart {
     id
     quantity
     purchaseOption
+    contractMonths
     productOffering {
       id
       name
@@ -15,6 +16,17 @@ fragment CartFields on ShoppingCart {
       recurringChargePeriod
       price {
         dutyFreeAmount {
+          unit
+          value
+        }
+      }
+    }
+    itemSubtotal {
+      name
+      priceType
+      recurringChargePeriod
+      price {
+        taxIncludedAmount {
           unit
           value
         }
@@ -62,12 +74,16 @@ mutation AddCartItem(
   $productOfferingId: String!
   $quantity: Int!
   $purchaseOption: String
+  $contractMonths: Int
+  $launchOffer: String
 ) {
   addCartItem(
     cartId: $cartId
     productOfferingId: $productOfferingId
     quantity: $quantity
     purchaseOption: $purchaseOption
+    contractMonths: $contractMonths
+    launchOffer: $launchOffer
   ) {
     ...CartFields
   }

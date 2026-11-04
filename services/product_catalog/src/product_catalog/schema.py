@@ -56,6 +56,21 @@ class ProductOfferingRelationship:
     relationship_type: str
 
 
+@_for(dto.Duration)
+@strawberry.type
+class Duration:
+    amount: int
+    units: str
+
+
+@_for(dto.ProductOfferingTerm)
+@strawberry.type
+class ProductOfferingTerm:
+    name: str
+    duration: Duration
+    available_with: list[str]
+
+
 @_for(dto.ProductSpecification)
 @strawberry.type
 class ProductSpecification:
@@ -88,6 +103,7 @@ class ProductOfferingPrice:
     valid_for: TimePeriod
     last_update: datetime
     purchase_option: str | None
+    percentage: Decimal | None
 
 
 @_for(dto.ProductOffering)
@@ -107,6 +123,7 @@ class ProductOffering:
     product_offering_price: list[ProductOfferingPrice]
     bundled_product_offering: list[Ref]
     product_offering_relationship: list[ProductOfferingRelationship]
+    product_offering_term: list[ProductOfferingTerm]
 
 
 @_for(dto.Category)
