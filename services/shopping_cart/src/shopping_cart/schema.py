@@ -79,6 +79,30 @@ class CartItem:
     item_subtotal: list[CartPrice]
 
 
+@_for(dto.PartyRoleRef)
+@strawberry.type
+class PartyRoleRef:
+    id: str
+    name: str
+    referred_type: str
+
+
+@_for(dto.RelatedParty)
+@strawberry.type
+class RelatedParty:
+    role: str
+    party_or_party_role: PartyRoleRef
+
+
+@_for(dto.EmailContactMedium)
+@strawberry.type
+class EmailContactMedium:
+    id: str
+    preferred: bool
+    contact_type: str
+    email_address: str
+
+
 @_for(dto.ShoppingCart)
 @strawberry.type
 class ShoppingCart:
@@ -87,6 +111,16 @@ class ShoppingCart:
     last_update: datetime
     cart_item: list[CartItem]
     cart_total_price: list[CartPrice]
+    related_party: list[RelatedParty]
+    contact_medium: list[EmailContactMedium]
+
+
+@strawberry.input
+class ShoppingCartPatch:
+    """Merge-patch: a field left out stays as it is."""
+
+    customer_id: str | None = None
+    contact_email: str | None = None
 
 
 def _service(info: strawberry.Info):
@@ -122,6 +156,12 @@ class Mutation:
     @strawberry.mutation
     def create_shopping_cart(self, info: strawberry.Info) -> ShoppingCart:
         return _convert(_service(info).create_cart())
+
+    @strawberry.mutation
+    def patch_shopping_cart(
+        self, info: strawberry.Info, id: str, patch: ShoppingCartPatch
+    ) -> ShoppingCart:
+        return _convert(_service(info).patch_cart(id, patch.customer_id, patch.contact_email))
 
     @strawberry.mutation
     def add_cart_item(

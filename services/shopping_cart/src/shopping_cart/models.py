@@ -58,3 +58,7 @@ class ShoppingCart:
     last_update: datetime
     items: list[CartItem] = field(default_factory=list)
     bundle_discount: CartDiscount | None = None
+    # Who the cart belongs to (TMF663 relatedParty with role customer), or only a contact email for a guest.
+    customer_id: str | None = None
+    customer_name: str | None = None
+    contact_email: str | None = None
