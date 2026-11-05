@@ -29,6 +29,7 @@ Paths are relative to the base URL. Each module lives under its path, and its Gr
 | /billing | billing | TMF678 |
 | /payment | payment | TMF676 |
 | /ticket | ticket | TMF621 |
+| /identity | identity | none (project extension: email and password sign-in, see proposal "Checkout") |
 | (none) | combined schema, at `/graphql` | customer 360 across modules |
 
 Examples:
