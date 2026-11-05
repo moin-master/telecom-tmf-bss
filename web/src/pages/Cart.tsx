@@ -67,9 +67,9 @@ export function Cart() {
 
           <OrderSummary cart={cart} />
 
-          <button type="button" className="btn btn--big receipt__checkout" disabled>
-            Checkout opens soon
-          </button>
+          <Link to="/checkout" className="btn btn--big receipt__checkout">
+            Checkout
+          </Link>
           <p className="receipt__note">Prices shown are those in the catalog when you added each item.</p>
         </aside>
       </div>

@@ -8,4 +8,5 @@ const client = (path: string) =>
 
 export const catalogApi = client('product-catalog')
 export const cartApi = client('shopping-cart')
+export const identityApi = client('identity')
 export const resourceApi = client('resource')

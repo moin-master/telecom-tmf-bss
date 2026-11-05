@@ -1,0 +1,34 @@
+fragment ProfileFields on Profile {
+  customerId
+  individualId
+  name
+  email
+}
+
+query Me {
+  me {
+    ...ProfileFields
+  }
+}
+
+mutation Register($email: String!, $password: String!, $givenName: String!, $familyName: String!) {
+  register(email: $email, password: $password, givenName: $givenName, familyName: $familyName) {
+    token
+    profile {
+      ...ProfileFields
+    }
+  }
+}
+
+mutation SignIn($email: String!, $password: String!) {
+  signIn(email: $email, password: $password) {
+    token
+    profile {
+      ...ProfileFields
+    }
+  }
+}
+
+mutation SignOut {
+  signOut
+}
