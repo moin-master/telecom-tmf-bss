@@ -309,6 +309,7 @@ name = "product-order"
 version = "0.1.0"
 source = { editable = "services/product_order" }
 dependencies = [
+    { name = "account" },
     { name = "bss-shared" },
     { name = "customer" },
     { name = "fastapi" },
@@ -321,6 +322,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "account", editable = "services/account" },
     { name = "bss-shared", editable = "shared" },
     { name = "customer", editable = "services/customer" },
     { name = "fastapi", specifier = ">=0.115" },

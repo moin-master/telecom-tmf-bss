@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request
 from strawberry.fastapi import GraphQLRouter
 
 from bss_shared.auth import bearer_token
+from account.client import AccountClient
 from customer.client import CustomerClient
 from identity.client import IdentityClient
 from product_catalog.client import ProductCatalogClient
@@ -19,6 +20,7 @@ async def _context(request: Request) -> dict:
         ProductCatalogClient(),
         CustomerClient(),
         IdentityClient(),
+        AccountClient(),
     )
     return {"orders": service, "token": bearer_token(request.headers.get("authorization"))}
 

@@ -4,6 +4,7 @@ from datetime import datetime
 
 from bss_shared.clock import utcnow
 from bss_shared.errors import BadRequestError, ForbiddenError, NotFoundError
+from account.client import AccountClient
 from customer.client import CustomerClient
 from identity.client import IdentityClient
 from product_catalog.client import ProductCatalogClient, offering_needs_number
@@ -67,7 +68,13 @@ def _item_model(number: int, line: cart.CartItem) -> models.OrderItem:
     )
 
 
-def _item(row: models.OrderItem) -> dto.ProductOrderItem:
+def _billing(order: models.ProductOrder) -> dto.BillingAccountRef | None:
+    if order.billing_account_id is None:
+        return None
+    return dto.BillingAccountRef(order.billing_account_id, order.billing_account_name or order.billing_account_id)
+
+
+def _item(row: models.OrderItem, billing: dto.BillingAccountRef | None) -> dto.ProductOrderItem:
     return dto.ProductOrderItem(
         id=row.id,
         action=row.action,
@@ -85,10 +92,12 @@ def _item(row: models.OrderItem) -> dto.ProductOrderItem:
         ),
         item_price=[_price(p) for p in row.item_price],
         item_total_price=[_price(p) for p in row.item_total_price],
+        billing_account=billing,
     )
 
 
 def _order(row: models.ProductOrder) -> dto.ProductOrder:
+    billing = _billing(row)
     return dto.ProductOrder(
         id=row.id,
         state=row.state,
@@ -99,8 +108,9 @@ def _order(row: models.ProductOrder) -> dto.ProductOrder:
                 "customer", dto.PartyRoleRef(row.customer_id, row.customer_name, "Customer")
             )
         ],
-        product_order_item=[_item(i) for i in row.items],
+        product_order_item=[_item(i, billing) for i in row.items],
         order_total_price=[_price(p) for p in row.order_total_price],
+        billing_account=billing,
     )
 
 
@@ -112,6 +122,7 @@ class OrderService:
         catalog: ProductCatalogClient,
         customers: CustomerClient,
         identity: IdentityClient,
+        accounts: AccountClient,
         clock: Callable[[], datetime] = utcnow,
     ):
         self.repo = repo
@@ -119,9 +130,12 @@ class OrderService:
         self.catalog = catalog
         self.customers = customers
         self.identity = identity
+        self.accounts = accounts
         self.clock = clock
 
-    def create_order(self, token: str | None, cart_id: str) -> dto.ProductOrder:
+    def create_order(
+        self, token: str | None, cart_id: str, billing_account_id: str | None = None
+    ) -> dto.ProductOrder:
         """Builds a TMF622 order from the cart of the signed-in customer, then deletes the cart."""
         caller = self.identity.me(token)
         basket = self.carts.get_cart(cart_id)
@@ -132,6 +146,10 @@ class OrderService:
             raise ForbiddenError("This cart belongs to another customer")
         if not basket.cart_item:
             raise BadRequestError("The cart is empty")
+        if not billing_account_id:
+            raise BadRequestError("Choose billing details before you order")
+        # Raises NotFound when the account does not exist or belongs to another customer.
+        account = self.accounts.get_account_of(caller.customer_id, billing_account_id)
         for line in basket.cart_item:
             offering = self.catalog.get_offering(line.product_offering.id)
             if offering_needs_number(offering) and line.product is None:
@@ -148,6 +166,8 @@ class OrderService:
                 creation_date=self.clock(),
                 customer_id=customer.id,
                 customer_name=customer.name,
+                billing_account_id=account.id,
+                billing_account_name=account.name,
                 items=[_item_model(n, line) for n, line in enumerate(basket.cart_item, 1)],
                 order_total_price=[_price_model(p) for p in basket.cart_total_price],
             )

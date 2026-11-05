@@ -76,6 +76,12 @@ class RelatedParty:
 
 
 @dataclass(frozen=True)
+class BillingAccountRef:
+    id: str
+    name: str
+
+
+@dataclass(frozen=True)
 class ProductOrderItem:
     id: str
     action: str
@@ -86,6 +92,7 @@ class ProductOrderItem:
     item_term: list[ItemTerm]
     item_price: list[OrderPrice]
     item_total_price: list[OrderPrice]
+    billing_account: BillingAccountRef | None
 
 
 @dataclass(frozen=True)
@@ -97,3 +104,4 @@ class ProductOrder:
     related_party: list[RelatedParty]
     product_order_item: list[ProductOrderItem]
     order_total_price: list[OrderPrice]
+    billing_account: BillingAccountRef | None

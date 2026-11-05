@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "TMF622 Product Ordering"
 requires-python = ">=3.12"
 dependencies = [
+    "account",
     "bss-shared",
     "customer",
     "identity",
@@ -15,6 +16,7 @@ dependencies = [
 ]
 
 [tool.uv.sources]
+account = { workspace = true }
 bss-shared = { workspace = true }
 customer = { workspace = true }
 identity = { workspace = true }
