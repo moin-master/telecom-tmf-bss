@@ -91,6 +91,13 @@ class RelatedParty:
     party_or_party_role: PartyRoleRef
 
 
+@_for(dto.BillingAccountRef)
+@strawberry.type
+class BillingAccountRef:
+    id: str
+    name: str
+
+
 @_for(dto.ProductOrderItem)
 @strawberry.type
 class ProductOrderItem:
@@ -103,6 +110,7 @@ class ProductOrderItem:
     item_term: list[ItemTerm]
     item_price: list[OrderPrice]
     item_total_price: list[OrderPrice]
+    billing_account: BillingAccountRef | None
 
 
 @_for(dto.ProductOrder)
@@ -115,6 +123,7 @@ class ProductOrder:
     related_party: list[RelatedParty]
     product_order_item: list[ProductOrderItem]
     order_total_price: list[OrderPrice]
+    billing_account: BillingAccountRef | None
 
 
 @strawberry.input
@@ -148,9 +157,13 @@ class Query:
 @strawberry.type
 class Mutation:
     @strawberry.mutation
-    def create_product_order(self, info: strawberry.Info, cart_id: str) -> ProductOrder:
-        """Project extension: the order is built from the cart; the result is a TMF622 ProductOrder."""
-        return _convert(_service(info).create_order(_token(info), cart_id))
+    def create_product_order(
+        self, info: strawberry.Info, cart_id: str, billing_account_id: str | None = None
+    ) -> ProductOrder:
+        """Project extension: the order is built from the cart and the chosen billing account.
+
+        The result is a TMF622 ProductOrder."""
+        return _convert(_service(info).create_order(_token(info), cart_id, billing_account_id))
 
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)

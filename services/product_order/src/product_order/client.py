@@ -1,5 +1,6 @@
 """The only module other services import. In-process today; an HTTP version can replace it later."""
 
+from account.client import AccountClient
 from customer.client import CustomerClient
 from identity.client import IdentityClient
 from product_catalog.client import ProductCatalogClient
@@ -20,6 +21,7 @@ def _service() -> OrderService:
         ProductCatalogClient(),
         CustomerClient(),
         IdentityClient(),
+        AccountClient(),
     )
 
 

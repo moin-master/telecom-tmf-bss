@@ -56,5 +56,8 @@ class ProductOrder:
     channel: str = "web"
     customer_id: str
     customer_name: str
+    # The billing account the customer chose (TMF622 billingAccount, on the order and on each item).
+    billing_account_id: str | None = None
+    billing_account_name: str | None = None
     items: list[OrderItem] = field(default_factory=list)
     order_total_price: list[OrderPrice] = field(default_factory=list)
