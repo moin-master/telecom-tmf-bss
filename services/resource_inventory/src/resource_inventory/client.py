@@ -52,3 +52,7 @@ class ResourceInventoryClient:
     def release_resource(self, id: str) -> LogicalResource:
         """Raises Conflict when the number is not reserved."""
         return _service().patch_resource(id, "available", "idle")
+
+    def allocate_resource(self, id: str) -> LogicalResource:
+        """Raises Conflict when the number is not reserved. An allocated number cannot be released."""
+        return _service().allocate_resource(id)

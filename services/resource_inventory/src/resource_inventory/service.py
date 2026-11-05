@@ -90,3 +90,18 @@ class ResourceService:
                 row.usage_state = usage_state
             self.repo.save(row)
         return _resource(row)
+
+    def allocate_resource(self, id: str) -> dto.LogicalResource:
+        """A reserved number becomes allocated (an order holds it). Only fulfilment calls this, not the patch."""
+        with _PATCH_LOCK:
+            row = self.repo.get(id)
+            if row is None:
+                raise NotFoundError("Resource", id)
+            if row.allocation_status != "reserved":
+                raise ConflictError(
+                    f"Resource {id} is {row.allocation_status} and cannot be allocated, it must be reserved"
+                )
+            row.allocation_status = "allocated"
+            row.usage_state = "active"
+            self.repo.save(row)
+        return _resource(row)

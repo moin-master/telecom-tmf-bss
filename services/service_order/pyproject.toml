@@ -4,10 +4,12 @@ version = "0.1.0"
 description = "TMF641 Service Ordering"
 requires-python = ">=3.12"
 dependencies = [
+    "account",
     "bss-shared",
     "fastapi>=0.115",
     "mongita>=1.2",
     "product-order",
+    "resource-inventory",
     "service-registry",
     "strawberry-graphql[fastapi]>=0.240",
 ]
@@ -16,6 +18,8 @@ dependencies = [
 bss-shared = { workspace = true }
 product-order = { workspace = true }
 service-registry = { workspace = true }
+account = { workspace = true }
+resource-inventory = { workspace = true }
 
 [build-system]
 requires = ["uv_build>=0.11.11,<0.12"]
