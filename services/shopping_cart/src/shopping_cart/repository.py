@@ -17,5 +17,8 @@ class CartRepository:
             {"_id": cart.id}, to_doc(cart), upsert=True
         )
 
+    def delete(self, id: str) -> None:
+        self.db[ShoppingCart.collection].delete_one({"_id": id})
+
     def remove_item(self, cart: ShoppingCart, item: CartItem) -> None:
         cart.items.remove(item)

@@ -9,6 +9,7 @@ dependencies = [
     "identity",
     "party",
     "product-catalog",
+    "product-order",
     "resource-inventory",
     "shopping-cart",
     "fastapi>=0.115",
@@ -21,6 +22,7 @@ customer = { workspace = true }
 identity = { workspace = true }
 party = { workspace = true }
 product-catalog = { workspace = true }
+product-order = { workspace = true }
 resource-inventory = { workspace = true }
 shopping-cart = { workspace = true }
 

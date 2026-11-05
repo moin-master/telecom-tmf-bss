@@ -5,6 +5,7 @@ import { Checkout } from './pages/Checkout'
 import { Configure } from './pages/Configure'
 import { Home } from './pages/Home'
 import { NotFoundPage } from './pages/NotFoundPage'
+import { OrderConfirmation } from './pages/OrderConfirmation'
 import { OfferDetail } from './pages/OfferDetail'
 
 const router = createBrowserRouter([
@@ -15,6 +16,7 @@ const router = createBrowserRouter([
       { path: '/offers/:id', element: <OfferDetail /> },
       { path: '/cart', element: <Cart /> },
       { path: '/checkout', element: <Checkout /> },
+      { path: '/orders/:id', element: <OrderConfirmation /> },
       { path: '/cart/items/:itemId/configure', element: <Configure /> },
       { path: '*', element: <NotFoundPage /> },
     ],

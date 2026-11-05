@@ -1,0 +1,56 @@
+fragment OrderFields on ProductOrder {
+  id
+  state
+  creationDate
+  relatedParty {
+    role
+    partyOrPartyRole {
+      id
+      name
+    }
+  }
+  productOrderItem {
+    id
+    quantity
+    productOffering {
+      id
+      name
+    }
+    itemTerm {
+      name
+      duration {
+        amount
+        units
+      }
+    }
+    product {
+      productCharacteristic {
+        name
+        value
+      }
+    }
+  }
+  orderTotalPrice {
+    name
+    priceType
+    recurringChargePeriod
+    price {
+      taxIncludedAmount {
+        unit
+        value
+      }
+    }
+  }
+}
+
+query Order($id: String!) {
+  productOrder(id: $id) {
+    ...OrderFields
+  }
+}
+
+mutation PlaceOrder($cartId: String!) {
+  createProductOrder(cartId: $cartId) {
+    ...OrderFields
+  }
+}

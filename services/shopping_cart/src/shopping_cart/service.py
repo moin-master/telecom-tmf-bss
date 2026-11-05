@@ -10,6 +10,7 @@ from product_catalog.client import (
     ProductCatalogClient,
     ProductOffering,
     ProductOfferingPrice,
+    offering_needs_number,
 )
 from customer.client import CustomerClient
 from resource_inventory.client import ResourceInventoryClient
@@ -31,14 +32,6 @@ _OPTION_NAMES = {"own": "Own it", "tradeIn": "Trade-in", "finance": "Finance"}
 
 TEL_MSISDN = "TEL_MSISDN"
 _EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
-
-
-def _needs_number(offering: ProductOffering) -> bool:
-    """A bundle with a SIM part, or a single offer whose specification has an MSISDN characteristic."""
-    if offering.is_bundle:
-        return any(b.role == "sim" for b in offering.bundled_product_offering)
-    spec = offering.product_specification
-    return bool(spec and any(c.name == "MSISDN" for c in spec.product_spec_characteristic))
 
 
 def _recurring_period(price: ProductOfferingPrice) -> str | None:
@@ -261,7 +254,7 @@ class CartService:
         # A line with a SIM has its own number, so it is never merged with another line.
         existing = (
             None
-            if _needs_number(offering)
+            if offering_needs_number(offering)
             else self._twin(cart, None, offering_id, option, contract, launch)
         )
         if existing:
@@ -308,7 +301,7 @@ class CartService:
         )
         twin = (
             None
-            if _needs_number(offering)
+            if offering_needs_number(offering)
             else self._twin(cart, item, item.offering_id, option, contract, launch)
         )
         if twin:
@@ -339,6 +332,14 @@ class CartService:
         self._release(item.number_resource_id)
         return _cart(cart)
 
+    def delete_cart(self, id: str, keep_reservations: bool = False) -> None:
+        """Deletes a cart. The phone numbers it holds go back to the pool, unless an order now holds them."""
+        cart = self._cart_row(id)
+        self.repo.delete(cart.id)
+        if not keep_reservations:
+            for item in cart.items:
+                self._release(item.number_resource_id)
+
     def configure_item(
         self, cart_id: str, item_id: str, number_resource_id: str
     ) -> dto.ShoppingCart:
@@ -347,7 +348,7 @@ class CartService:
         item = next((i for i in cart.items if i.id == item_id), None)
         if item is None:
             raise NotFoundError("CartItem", item_id)
-        if not _needs_number(self.catalog.get_offering(item.offering_id)):
+        if not offering_needs_number(self.catalog.get_offering(item.offering_id)):
             raise BadRequestError(f"{item.offering_name} has no SIM, so there is no number to choose")
         if item.number_resource_id == number_resource_id:
             return _cart(cart)
@@ -376,7 +377,7 @@ class CartService:
         offering = self.catalog.get_offering(offering_id)
         if not offering.is_sellable:
             raise BadRequestError(f"ProductOffering {offering_id} is not sellable")
-        if _needs_number(offering) and quantity != 1:
+        if offering_needs_number(offering) and quantity != 1:
             raise BadRequestError("A line with a SIM has one phone number, so its quantity is 1")
         option = self._purchase_option(offering, purchase_option)
         contract = self._contract(offering, option, contract_months)

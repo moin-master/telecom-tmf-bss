@@ -41,6 +41,8 @@ type CartContextValue = {
   add: (offering: { id: string; name: string }, quantity?: number, choice?: CartChoice) => Promise<void>
   update: (itemId: string, quantity: number, choice?: CartChoice) => Promise<void>
   remove: (itemId: string) => Promise<void>
+  // The cart was turned into an order and deleted by the backend: drop its id.
+  forget: () => void
   // Reserves a phone number (a TMF639 resource id) for a cart line with a SIM.
   configure: (itemId: string, numberResourceId: string) => Promise<void>
   busy: boolean
@@ -188,6 +190,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
     },
     remove: async (itemId) => {
       await removeMutation.mutateAsync(itemId)
+    },
+    forget: () => {
+      writeId(null)
+      setCartId(null)
+      queryClient.removeQueries({ queryKey: ['cart'] })
     },
     configure: async (itemId, numberResourceId) => {
       await configureMutation.mutateAsync({ itemId, numberResourceId })

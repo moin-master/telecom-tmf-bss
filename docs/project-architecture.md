@@ -81,7 +81,7 @@ What each module is for is described per API in proposal section 4. This table a
 | account | TMF666 | TMF629 | none |
 | catalog | TMF620 | none | none |
 | cart | TMF663 | TMF620, TMF639, TMF629 | none |
-| order | TMF622 | TMF663, TMF620, TMF629 | order accepted, order completed |
+| order | TMF622 | TMF663, TMF620, TMF629, identity | order accepted, order completed |
 | service-order | TMF641 | TMF639, TMF638 | fulfilment done |
 | service-inventory | TMF638 | none | none |
 | resource | TMF639 | none | none |
