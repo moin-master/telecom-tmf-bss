@@ -592,6 +592,7 @@ dependencies = [
     { name = "account" },
     { name = "bss-shared" },
     { name = "fastapi" },
+    { name = "identity" },
     { name = "mongita" },
     { name = "product-order" },
     { name = "resource-inventory" },
@@ -604,6 +605,7 @@ requires-dist = [
     { name = "account", editable = "services/account" },
     { name = "bss-shared", editable = "shared" },
     { name = "fastapi", specifier = ">=0.115" },
+    { name = "identity", editable = "services/identity" },
     { name = "mongita", specifier = ">=1.2" },
     { name = "product-order", editable = "services/product_order" },
     { name = "resource-inventory", editable = "services/resource_inventory" },
@@ -618,6 +620,7 @@ source = { editable = "services/service_registry" }
 dependencies = [
     { name = "bss-shared" },
     { name = "fastapi" },
+    { name = "identity" },
     { name = "mongita" },
     { name = "strawberry-graphql", extra = ["fastapi"] },
 ]
@@ -626,6 +629,7 @@ dependencies = [
 requires-dist = [
     { name = "bss-shared", editable = "shared" },
     { name = "fastapi", specifier = ">=0.115" },
+    { name = "identity", editable = "services/identity" },
     { name = "mongita", specifier = ">=1.2" },
     { name = "strawberry-graphql", extras = ["fastapi"], specifier = ">=0.240" },
 ]

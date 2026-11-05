@@ -6,12 +6,14 @@ requires-python = ">=3.12"
 dependencies = [
     "bss-shared",
     "fastapi>=0.115",
+    "identity",
     "mongita>=1.2",
     "strawberry-graphql[fastapi]>=0.240",
 ]
 
 [tool.uv.sources]
 bss-shared = { workspace = true }
+identity = { workspace = true }
 
 [build-system]
 requires = ["uv_build>=0.11.11,<0.12"]

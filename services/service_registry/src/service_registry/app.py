@@ -1,16 +1,17 @@
-from collections.abc import AsyncIterator
-
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from strawberry.fastapi import GraphQLRouter
 
+from bss_shared.auth import bearer_token
+from identity.client import IdentityClient
 from service_registry.db import database, init_db
 from service_registry.repository import ServiceRepository
 from service_registry.schema import schema
 from service_registry.service import ServiceRegistryService
 
 
-async def _context() -> AsyncIterator[dict]:
-    yield {"services": ServiceRegistryService(ServiceRepository(database))}
+async def _context(request: Request) -> dict:
+    service = ServiceRegistryService(ServiceRepository(database), IdentityClient())
+    return {"services": service, "token": bearer_token(request.headers.get("authorization"))}
 
 
 def create_app() -> FastAPI:

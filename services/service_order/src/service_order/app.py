@@ -1,10 +1,10 @@
-from collections.abc import AsyncIterator
-
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from strawberry.fastapi import GraphQLRouter
 
 from account.client import AccountClient
+from bss_shared.auth import bearer_token
 from bss_shared.events import Event, subscribe
+from identity.client import IdentityClient
 from product_order.client import OrderClient
 from product_order.events import ProductOrderCreateEvent
 from resource_inventory.client import ResourceInventoryClient
@@ -22,11 +22,12 @@ def _service() -> ServiceOrderService:
         ServiceRegistryClient(),
         AccountClient(),
         ResourceInventoryClient(),
+        IdentityClient(),
     )
 
 
-async def _context() -> AsyncIterator[dict]:
-    yield {"service_orders": _service()}
+async def _context(request: Request) -> dict:
+    return {"service_orders": _service(), "token": bearer_token(request.headers.get("authorization"))}
 
 
 def on_product_order_create(event: Event) -> None:

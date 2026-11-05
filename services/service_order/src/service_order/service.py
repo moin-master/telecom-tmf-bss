@@ -6,8 +6,9 @@ from datetime import datetime
 from account.client import AccountClient
 from bss_shared.clock import utcnow
 from bss_shared.config import CONTEXT_PATH
-from bss_shared.errors import ConflictError, NotFoundError
+from bss_shared.errors import ConflictError, ForbiddenError, NotFoundError
 from bss_shared.events import publish
+from identity.client import IdentityClient
 from product_order.client import OrderClient, ProductOrder, ProductOrderItem
 from product_order.events import ProductOrderCreateEvent
 from resource_inventory.client import ResourceInventoryClient
@@ -70,6 +71,7 @@ class ServiceOrderService:
         registry_client: ServiceRegistryClient,
         accounts: AccountClient,
         resources: ResourceInventoryClient,
+        identity: IdentityClient,
         clock: Callable[[], datetime] = utcnow,
     ):
         self.repo = repo
@@ -77,8 +79,27 @@ class ServiceOrderService:
         self.registry = registry_client
         self.accounts = accounts
         self.resources = resources
+        self.identity = identity
         self.clock = clock
 
+    def get_my_service_order(self, token: str | None, id: str) -> dto.ServiceOrder:
+        """For GraphQL: another customer's order is reported as not found."""
+        customer_id = self.identity.me(token).customer_id
+        row = self.repo.get(id)
+        if row is None or row.customer_id != customer_id:
+            raise NotFoundError("ServiceOrder", id)
+        return _order(row)
+
+    def list_my_service_orders(
+        self, token: str | None, related_party_id: str | None = None
+    ) -> list[dto.ServiceOrder]:
+        """For GraphQL: only the caller's orders."""
+        customer_id = self.identity.me(token).customer_id
+        if related_party_id and related_party_id != customer_id:
+            raise ForbiddenError("You can only list your own service orders")
+        return [_order(r) for r in self.repo.list(related_party_id=customer_id)]
+
+    # Open methods below are for other services (through the client) and events, without a token.
     def get_service_order(self, id: str) -> dto.ServiceOrder:
         row = self.repo.get(id)
         if row is None:

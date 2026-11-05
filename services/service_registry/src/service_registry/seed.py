@@ -17,9 +17,9 @@ SPEC = SpecificationRef(id="SSPEC-1001", name="Mobile Voice and Data")
 
 # (customer id, customer name, msisdn resource id, number, plan, state, started)
 SERVICES = [
-    ("CUS-1001", "Anna Berg", "RES-1019", "9991608190481", "Unlimited 5G", "active", datetime(2026, 9, 24, tzinfo=timezone.utc)),
-    ("CUS-1002", "Jonas Keller", "RES-1020", "9991762605544", "Standard 4G", "active", datetime(2026, 9, 28, tzinfo=timezone.utc)),
-    ("CUS-1003", "Mira Santos", "RES-1018", "9991512746359", "Standard 4G", "suspended", datetime(2026, 10, 2, tzinfo=timezone.utc)),
+    ("DEMO-CUS-1001", "Anna Berg", "RES-1019", "9991608190481", "Unlimited 5G", "active", datetime(2026, 9, 24, tzinfo=timezone.utc)),
+    ("DEMO-CUS-1002", "Jonas Keller", "RES-1020", "9991762605544", "Standard 4G", "active", datetime(2026, 9, 28, tzinfo=timezone.utc)),
+    ("DEMO-CUS-1003", "Mira Santos", "RES-1018", "9991512746359", "Standard 4G", "suspended", datetime(2026, 10, 2, tzinfo=timezone.utc)),
 ]
 
 

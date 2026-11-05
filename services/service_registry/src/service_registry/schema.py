@@ -100,18 +100,22 @@ def _service(info: strawberry.Info):
     return info.context["services"]
 
 
+def _token(info: strawberry.Info) -> str | None:
+    return info.context["token"]
+
+
 @strawberry.type
 class Query:
     @strawberry.field
     def service(self, info: strawberry.Info, id: str) -> Service:
-        return _convert(_service(info).get_service(id))
+        return _convert(_service(info).get_my_service(_token(info), id))
 
     @strawberry.field
     def service_list(
         self, info: strawberry.Info, filter: ServiceFilter | None = None
     ) -> list[Service]:
         f = filter or ServiceFilter()
-        return _convert(_service(info).list_services(f.related_party_id))
+        return _convert(_service(info).list_my_services(_token(info), f.related_party_id))
 
 
 # Services are created in process through the client; there is no mutation.
