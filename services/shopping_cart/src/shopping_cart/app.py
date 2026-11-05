@@ -3,6 +3,7 @@ from collections.abc import AsyncIterator
 from fastapi import FastAPI
 from strawberry.fastapi import GraphQLRouter
 
+from customer.client import CustomerClient
 from product_catalog.client import ProductCatalogClient
 from resource_inventory.client import ResourceInventoryClient
 from shopping_cart.db import database, init_db
@@ -12,7 +13,12 @@ from shopping_cart.service import CartService
 
 
 async def _context() -> AsyncIterator[dict]:
-    yield {"cart": CartService(CartRepository(database), ProductCatalogClient(), ResourceInventoryClient())}
+    yield {"cart": CartService(
+            CartRepository(database),
+            ProductCatalogClient(),
+            ResourceInventoryClient(),
+            CustomerClient(),
+        )}
 
 
 def create_app() -> FastAPI:

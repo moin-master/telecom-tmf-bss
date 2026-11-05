@@ -1,3 +1,4 @@
+import re
 import secrets
 from datetime import datetime
 from decimal import Decimal
@@ -10,6 +11,7 @@ from product_catalog.client import (
     ProductOffering,
     ProductOfferingPrice,
 )
+from customer.client import CustomerClient
 from resource_inventory.client import ResourceInventoryClient
 from shopping_cart import dto, models
 from shopping_cart.repository import CartRepository
@@ -28,6 +30,7 @@ _OPTION_NAMES = {"own": "Own it", "tradeIn": "Trade-in", "finance": "Finance"}
 
 
 TEL_MSISDN = "TEL_MSISDN"
+_EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
 def _needs_number(offering: ProductOffering) -> bool:
@@ -170,6 +173,23 @@ def _cart(row: models.ShoppingCart) -> dto.ShoppingCart:
         last_update=row.last_update,
         cart_item=[_item(i) for i in row.items],
         cart_total_price=lines + _totals(row.items, discount),
+        related_party=(
+            [
+                dto.RelatedParty(
+                    "customer",
+                    dto.PartyRoleRef(
+                        row.customer_id, row.customer_name or row.customer_id, "Customer"
+                    ),
+                )
+            ]
+            if row.customer_id
+            else []
+        ),
+        contact_medium=(
+            [dto.EmailContactMedium(f"{row.id}-EM1", True, "email", row.contact_email)]
+            if row.contact_email
+            else []
+        ),
     )
 
 
@@ -183,11 +203,13 @@ class CartService:
         repo: CartRepository,
         catalog: ProductCatalogClient,
         resources: ResourceInventoryClient,
+        customers: CustomerClient,
         clock: Callable[[], datetime] = utcnow,
     ):
         self.repo = repo
         self.catalog = catalog
         self.resources = resources
+        self.customers = customers
         self.clock = clock
 
     def create_cart(self) -> dto.ShoppingCart:
@@ -201,6 +223,27 @@ class CartService:
 
     def get_cart(self, id: str) -> dto.ShoppingCart:
         return _cart(self._cart_row(id))
+
+    def patch_cart(
+        self,
+        id: str,
+        customer_id: str | None = None,
+        contact_email: str | None = None,
+    ) -> dto.ShoppingCart:
+        """Merge-patch: only the fields sent change. The customer must exist."""
+        cart = self._cart_row(id)
+        if customer_id is not None:
+            # Raises NotFound for an unknown customer; the cart is unchanged then.
+            customer = self.customers.get_customer(customer_id)
+            cart.customer_id, cart.customer_name = customer.id, customer.name
+        if contact_email is not None:
+            email = contact_email.strip().lower()
+            if not _EMAIL.match(email):
+                raise BadRequestError(f"'{contact_email}' is not a valid email address")
+            cart.contact_email = email
+        cart.last_update = self.clock()
+        self.repo.save(cart)
+        return _cart(cart)
 
     def add_item(
         self,

@@ -62,6 +62,13 @@ fragment CartItemFields on CartItem {
 fragment CartFields on ShoppingCart {
   id
   lastUpdate
+  relatedParty {
+    role
+    partyOrPartyRole {
+      id
+      name
+    }
+  }
   cartItem {
     ...CartItemFields
   }
@@ -156,6 +163,12 @@ mutation RemoveCartItem($cartId: String!, $cartItemId: String!) {
 
 mutation ConfigureCartItem($cartId: String!, $cartItemId: String!, $numberResourceId: String!) {
   configureCartItem(cartId: $cartId, cartItemId: $cartItemId, numberResourceId: $numberResourceId) {
+    ...CartFields
+  }
+}
+
+mutation PatchShoppingCart($id: String!, $customerId: String!) {
+  patchShoppingCart(id: $id, patch: { customerId: $customerId }) {
     ...CartFields
   }
 }

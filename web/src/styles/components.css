@@ -1362,3 +1362,7 @@
 .signedin__email {
   color: var(--muted);
 }
+.signedin__link {
+  color: var(--muted);
+  font-size: 0.88rem;
+}

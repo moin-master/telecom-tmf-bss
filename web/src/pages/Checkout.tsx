@@ -15,6 +15,7 @@ export function Checkout() {
   const { cart, loading: cartLoading } = useCart()
   const { profile, loading: authLoading, signOut } = useAuth()
   const [mode, setMode] = useState<AuthMode>('register')
+  const owner = cart?.relatedParty.find((p) => p.role === 'customer')?.partyOrPartyRole
 
   if (cartLoading || authLoading) {
     return (
@@ -59,6 +60,7 @@ export function Checkout() {
             <div className="signedin">
               <p className="signedin__name">{profile.name}</p>
               <p className="signedin__email">{profile.email}</p>
+              {owner && <p className="signedin__link">This cart belongs to customer {owner.id}.</p>}
               <button type="button" className="configure__keep" onClick={() => void signOut()}>
                 Not you? Sign out
               </button>

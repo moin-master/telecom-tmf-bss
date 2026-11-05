@@ -70,9 +70,32 @@ class CartItem:
 
 
 @dataclass(frozen=True)
+class PartyRoleRef:
+    id: str
+    name: str
+    referred_type: str
+
+
+@dataclass(frozen=True)
+class RelatedParty:
+    role: str
+    party_or_party_role: PartyRoleRef
+
+
+@dataclass(frozen=True)
+class EmailContactMedium:
+    id: str
+    preferred: bool
+    contact_type: str
+    email_address: str
+
+
+@dataclass(frozen=True)
 class ShoppingCart:
     id: str
     creation_date: datetime
     last_update: datetime
     cart_item: list[CartItem] = field(default_factory=list)
     cart_total_price: list[CartPrice] = field(default_factory=list)
+    related_party: list[RelatedParty] = field(default_factory=list)
+    contact_medium: list[EmailContactMedium] = field(default_factory=list)

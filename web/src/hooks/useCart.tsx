@@ -1,16 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { createContext, useContext, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { cartApi } from '../api/client'
 import {
   AddCartItemDocument,
   ConfigureCartItemDocument,
   CartDocument,
   CreateCartDocument,
+  PatchShoppingCartDocument,
   RemoveCartItemDocument,
   UpdateCartItemDocument,
   type CartFieldsFragment,
 } from '../api/generated/shopping-cart/graphql'
 import { apiError } from '../lib/errors'
+import { useAuth } from './useAuth'
 import type { CartChoice } from '../lib/purchase'
 
 const STORAGE_KEY = 'bss.cartId'
@@ -145,6 +147,25 @@ export function CartProvider({ children }: { children: ReactNode }) {
       cartApi.request(RemoveCartItemDocument, { cartId: cartId!, cartItemId: itemId }),
     onSuccess: (data) => queryClient.setQueryData(['cart', cartId], data.removeCartItem),
   })
+
+  // A signed-in shopper owns the cart: the customer is attached once per cart and customer.
+  const { profile } = useAuth()
+  const attached = useRef<string | null>(null)
+  const customerId = profile?.customerId
+  useEffect(() => {
+    const current = query.data
+    if (!customerId || !cartId || !current) return
+    if (current.relatedParty.some((p) => p.role === 'customer' && p.partyOrPartyRole.id === customerId)) return
+    const key = `${cartId}:${customerId}`
+    if (attached.current === key) return
+    attached.current = key
+    cartApi
+      .request(PatchShoppingCartDocument, { id: cartId, customerId })
+      .then((data) => queryClient.setQueryData(['cart', cartId], data.patchShoppingCart))
+      .catch(() => {
+        attached.current = null
+      })
+  }, [customerId, cartId, query.data, queryClient])
 
   const configureMutation = useMutation({
     mutationFn: ({ itemId, numberResourceId }: { itemId: string; numberResourceId: string }) =>
