@@ -21,7 +21,7 @@ Paths are relative to the base URL. Each module lives under its path, and its Gr
 | /shopping-cart | cart | TMF663 |
 | /order | order | TMF622 |
 | /service-order | service-order | TMF641 |
-| /service-inventory | service-inventory | TMF638 |
+| /service-registry | service-registry | TMF638 |
 | /resource | resource | TMF639 |
 | /shipment | shipment | TMF700 |
 | /product-inventory | product-inventory | TMF637 |

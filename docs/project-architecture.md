@@ -81,9 +81,9 @@ What each module is for is described per API in proposal section 4. This table a
 | account | TMF666 | TMF629, identity | none |
 | catalog | TMF620 | none | none |
 | cart | TMF663 | TMF620, TMF639, TMF629 | none |
-| order | TMF622 | TMF663, TMF620, TMF629, TMF666, identity | order accepted, order completed |
-| service-order | TMF641 | TMF639, TMF638 | fulfilment done |
-| service-inventory | TMF638 | none | none |
+| order | TMF622 | TMF663, TMF620, TMF629, TMF666, identity | ProductOrderCreateEvent (order accepted), order completed |
+| service-order | TMF641 | TMF666, TMF639, TMF638 (service-registry) | ServiceOrderStateChangeEvent (fulfilment done) |
+| service-registry | TMF638 | none | none |
 | resource | TMF639 | none | none |
 | shipment | TMF700 | none | shipment done |
 | product-inventory | TMF637 | none | product active |
@@ -100,8 +100,8 @@ The business steps are in proposal section 3. This is how the modules trigger ea
 
 | Event | Published by | Consumed by | Effect |
 |-------|--------------|-------------|--------|
-| order accepted | TMF622 | TMF641, TMF700 | service created and resources allocated; shipment created for physical items |
-| fulfilment done | TMF641 | TMF622 | order moves toward completed |
+| order accepted (`ProductOrderCreateEvent`) | TMF622 | TMF641, TMF700 | service order created and completed; services created in the registry and numbers allocated; shipment created for physical items (TMF700 later) |
+| fulfilment done (`ServiceOrderStateChangeEvent`, state completed) | TMF641 | TMF622 | order moves toward completed |
 | shipment done | TMF700 | TMF622 | order moves toward completed |
 | order completed | TMF622 | TMF637 | the customer's product is created |
 | product active | TMF637 | TMF678 | billing setup for the product |
