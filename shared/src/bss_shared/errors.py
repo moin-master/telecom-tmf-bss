@@ -26,3 +26,8 @@ class BadRequestError(TmfError):
 class ConflictError(TmfError):
     def __init__(self, message: str):
         super().__init__("Conflict", "Conflict", message, 409)
+
+
+class UnauthorizedError(TmfError):
+    def __init__(self, message: str = "Sign in to continue"):
+        super().__init__("Unauthorized", "Unauthorized", message, 401)
