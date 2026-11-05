@@ -14,6 +14,7 @@ const service = (path: string) => ({
 
 const config: CodegenConfig = {
   generates: {
+    'src/api/generated/account/': service('account'),
     'src/api/generated/identity/': service('identity'),
     'src/api/generated/order/': service('order'),
     'src/api/generated/product-catalog/': service('product-catalog'),

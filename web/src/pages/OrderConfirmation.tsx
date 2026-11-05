@@ -1,4 +1,5 @@
 import { Link, useParams } from 'react-router-dom'
+import { BillTo } from '../components/BillTo'
 import { ErrorState, StateCard } from '../components/StateViews'
 import { useAuth } from '../hooks/useAuth'
 import { useOrder } from '../hooks/useOrders'
@@ -74,6 +75,7 @@ export function OrderConfirmation() {
               </li>
             )
           })}
+          {data.billingAccount && <li><BillTo accountId={data.billingAccount.id} /></li>}
         </ul>
 
         <aside className="receipt" aria-label="Order total">

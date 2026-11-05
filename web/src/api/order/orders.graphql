@@ -2,6 +2,10 @@ fragment OrderFields on ProductOrder {
   id
   state
   creationDate
+  billingAccount {
+    id
+    name
+  }
   relatedParty {
     role
     partyOrPartyRole {
@@ -49,8 +53,8 @@ query Order($id: String!) {
   }
 }
 
-mutation PlaceOrder($cartId: String!) {
-  createProductOrder(cartId: $cartId) {
+mutation PlaceOrder($cartId: String!, $billingAccountId: String) {
+  createProductOrder(cartId: $cartId, billingAccountId: $billingAccountId) {
     ...OrderFields
   }
 }

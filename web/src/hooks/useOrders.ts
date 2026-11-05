@@ -10,8 +10,8 @@ export function usePlaceOrder() {
   const { token } = useAuth()
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (cartId: string) =>
-      orderApi.request(PlaceOrderDocument, { cartId }, bearer(token)).then((r) => r.createProductOrder),
+    mutationFn: (v: { cartId: string; billingAccountId: string }) =>
+      orderApi.request(PlaceOrderDocument, v, bearer(token)).then((r) => r.createProductOrder),
     onSuccess: (order) => queryClient.setQueryData(['order', order.id], order),
   })
 }

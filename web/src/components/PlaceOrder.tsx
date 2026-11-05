@@ -6,8 +6,8 @@ import { usePlaceOrder } from '../hooks/useOrders'
 import { apiError } from '../lib/errors'
 import { LineCheck } from './LineCheck'
 
-// Step 2 of checkout: check every line and turn the cart into an order.
-export function PlaceOrder() {
+// Step 3 of checkout: check every line and turn the cart into an order.
+export function PlaceOrder({ billingAccountId }: { billingAccountId: string | null }) {
   const { cart, forget } = useCart()
   const { profile } = useAuth()
   const place = usePlaceOrder()
@@ -23,7 +23,7 @@ export function PlaceOrder() {
   async function onPlace() {
     setError(null)
     try {
-      const order = await place.mutateAsync(cart!.id)
+      const order = await place.mutateAsync({ cartId: cart!.id, billingAccountId: billingAccountId! })
       forget()
       navigate(`/orders/${order.id}`)
     } catch (e) {
@@ -35,7 +35,7 @@ export function PlaceOrder() {
     <section className="checkout" aria-labelledby="order-title">
       <h2 id="order-title" className="checkout__step">
         <span className="checkout__num" aria-hidden="true">
-          2
+          3
         </span>
         Place your order
       </h2>
@@ -49,7 +49,7 @@ export function PlaceOrder() {
           {error}
         </p>
       )}
-      <button type="button" className="btn btn--big checkout__place" disabled={!linked || place.isPending} onClick={onPlace}>
+      <button type="button" className="btn btn--big checkout__place" disabled={!linked || !billingAccountId || place.isPending} onClick={onPlace}>
         {place.isPending ? 'Placing your order' : 'Place order'}
       </button>
       <p className="receipt__note checkout__note">No payment is taken in this step.</p>

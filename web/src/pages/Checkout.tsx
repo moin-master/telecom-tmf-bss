@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AuthForm, type AuthMode } from '../components/AuthForm'
+import { BillingStep } from '../components/BillingStep'
 import { OrderSummary } from '../components/OrderSummary'
 import { PlaceOrder } from '../components/PlaceOrder'
 import { StateCard } from '../components/StateViews'
@@ -16,6 +17,7 @@ export function Checkout() {
   const { cart, loading: cartLoading } = useCart()
   const { profile, loading: authLoading, signOut } = useAuth()
   const [mode, setMode] = useState<AuthMode>('register')
+  const [billingId, setBillingId] = useState<string | null>(null)
   const owner = cart?.relatedParty.find((p) => p.role === 'customer')?.partyOrPartyRole
 
   if (cartLoading || authLoading) {
@@ -80,7 +82,8 @@ export function Checkout() {
               </>
             )}
           </section>
-          {profile && <PlaceOrder />}
+          {profile && <BillingStep selectedId={billingId} onSelect={setBillingId} />}
+          {profile && <PlaceOrder billingAccountId={billingId} />}
         </div>
 
         <aside className="receipt" aria-label="Order summary">
