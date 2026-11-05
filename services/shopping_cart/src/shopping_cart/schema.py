@@ -164,6 +164,12 @@ class Mutation:
         return _convert(_service(info).patch_cart(id, patch.customer_id, patch.contact_email))
 
     @strawberry.mutation
+    def delete_shopping_cart(self, info: strawberry.Info, id: str) -> bool:
+        """Deletes the cart and frees the phone numbers it holds."""
+        _service(info).delete_cart(id)
+        return True
+
+    @strawberry.mutation
     def add_cart_item(
         self,
         info: strawberry.Info,

@@ -10,6 +10,7 @@ members = [
     "identity",
     "party",
     "product-catalog",
+    "product-order",
     "resource-inventory",
     "shopping-cart",
     "telecom-tmf-bss",
@@ -57,6 +58,7 @@ dependencies = [
     { name = "identity" },
     { name = "party" },
     { name = "product-catalog" },
+    { name = "product-order" },
     { name = "resource-inventory" },
     { name = "shopping-cart" },
     { name = "uvicorn" },
@@ -70,6 +72,7 @@ requires-dist = [
     { name = "identity", editable = "services/identity" },
     { name = "party", editable = "services/party" },
     { name = "product-catalog", editable = "services/product_catalog" },
+    { name = "product-order", editable = "services/product_order" },
     { name = "resource-inventory", editable = "services/resource_inventory" },
     { name = "shopping-cart", editable = "services/shopping_cart" },
     { name = "uvicorn", specifier = ">=0.30" },
@@ -274,6 +277,33 @@ requires-dist = [
     { name = "bss-shared", editable = "shared" },
     { name = "fastapi", specifier = ">=0.115" },
     { name = "mongita", specifier = ">=1.2" },
+    { name = "strawberry-graphql", extras = ["fastapi"], specifier = ">=0.240" },
+]
+
+[[package]]
+name = "product-order"
+version = "0.1.0"
+source = { editable = "services/product_order" }
+dependencies = [
+    { name = "bss-shared" },
+    { name = "customer" },
+    { name = "fastapi" },
+    { name = "identity" },
+    { name = "mongita" },
+    { name = "product-catalog" },
+    { name = "shopping-cart" },
+    { name = "strawberry-graphql", extra = ["fastapi"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "bss-shared", editable = "shared" },
+    { name = "customer", editable = "services/customer" },
+    { name = "fastapi", specifier = ">=0.115" },
+    { name = "identity", editable = "services/identity" },
+    { name = "mongita", specifier = ">=1.2" },
+    { name = "product-catalog", editable = "services/product_catalog" },
+    { name = "shopping-cart", editable = "services/shopping_cart" },
     { name = "strawberry-graphql", extras = ["fastapi"], specifier = ">=0.240" },
 ]
 
@@ -589,6 +619,7 @@ dependencies = [
     { name = "identity" },
     { name = "party" },
     { name = "product-catalog" },
+    { name = "product-order" },
     { name = "resource-inventory" },
     { name = "shopping-cart" },
 ]
@@ -601,6 +632,7 @@ requires-dist = [
     { name = "identity", editable = "services/identity" },
     { name = "party", editable = "services/party" },
     { name = "product-catalog", editable = "services/product_catalog" },
+    { name = "product-order", editable = "services/product_order" },
     { name = "resource-inventory", editable = "services/resource_inventory" },
     { name = "shopping-cart", editable = "services/shopping_cart" },
 ]

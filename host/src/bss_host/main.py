@@ -4,6 +4,7 @@ from bss_shared.config import CONTEXT_PATH
 from customer.app import create_app as create_customer
 from identity.app import create_app as create_identity
 from party.app import create_app as create_party
+from product_order.app import create_app as create_product_order
 from product_catalog.app import create_app as create_product_catalog
 from resource_inventory.app import create_app as create_resource_inventory
 from shopping_cart.app import create_app as create_shopping_cart
@@ -12,6 +13,7 @@ from shopping_cart.app import create_app as create_shopping_cart
 SERVICES = {
     "/customer": create_customer,
     "/identity": create_identity,
+    "/order": create_product_order,
     "/party": create_party,
     "/product-catalog": create_product_catalog,
     "/resource": create_resource_inventory,

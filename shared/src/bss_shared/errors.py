@@ -31,3 +31,8 @@ class ConflictError(TmfError):
 class UnauthorizedError(TmfError):
     def __init__(self, message: str = "Sign in to continue"):
         super().__init__("Unauthorized", "Unauthorized", message, 401)
+
+
+class ForbiddenError(TmfError):
+    def __init__(self, message: str = "You are not allowed to do that"):
+        super().__init__("Forbidden", "Forbidden", message, 403)

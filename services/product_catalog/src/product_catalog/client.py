@@ -16,6 +16,7 @@ __all__ = [
     "ProductOfferingPrice",
     "ProductOfferingTerm",
     "Relationship",
+    "offering_needs_number",
 ]
 
 _ready = False
@@ -28,6 +29,14 @@ def _ensure_ready() -> None:
     if not _ready:
         init_db()
         _ready = True
+
+
+def offering_needs_number(offering: ProductOffering) -> bool:
+    """A bundle with a SIM part, or a single offer whose specification has an MSISDN characteristic."""
+    if offering.is_bundle:
+        return any(b.role == "sim" for b in offering.bundled_product_offering)
+    spec = offering.product_specification
+    return bool(spec and any(c.name == "MSISDN" for c in spec.product_spec_characteristic))
 
 
 class ProductCatalogClient:
