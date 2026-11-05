@@ -5,6 +5,7 @@ description = "Mounts every service on one port under the context path"
 requires-python = ">=3.12"
 dependencies = [
     "bss-shared",
+    "account",
     "customer",
     "identity",
     "party",
@@ -18,6 +19,7 @@ dependencies = [
 
 [tool.uv.sources]
 bss-shared = { workspace = true }
+account = { workspace = true }
 customer = { workspace = true }
 identity = { workspace = true }
 party = { workspace = true }
