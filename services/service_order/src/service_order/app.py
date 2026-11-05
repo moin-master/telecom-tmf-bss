@@ -3,9 +3,11 @@ from collections.abc import AsyncIterator
 from fastapi import FastAPI
 from strawberry.fastapi import GraphQLRouter
 
+from account.client import AccountClient
 from bss_shared.events import Event, subscribe
 from product_order.client import OrderClient
 from product_order.events import ProductOrderCreateEvent
+from resource_inventory.client import ResourceInventoryClient
 from service_order.db import database, init_db
 from service_order.repository import ServiceOrderRepository
 from service_order.schema import schema
@@ -15,7 +17,11 @@ from service_registry.client import ServiceRegistryClient
 
 def _service() -> ServiceOrderService:
     return ServiceOrderService(
-        ServiceOrderRepository(database), OrderClient(), ServiceRegistryClient()
+        ServiceOrderRepository(database),
+        OrderClient(),
+        ServiceRegistryClient(),
+        AccountClient(),
+        ResourceInventoryClient(),
     )
 
 

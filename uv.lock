@@ -589,20 +589,24 @@ name = "service-order"
 version = "0.1.0"
 source = { editable = "services/service_order" }
 dependencies = [
+    { name = "account" },
     { name = "bss-shared" },
     { name = "fastapi" },
     { name = "mongita" },
     { name = "product-order" },
+    { name = "resource-inventory" },
     { name = "service-registry" },
     { name = "strawberry-graphql", extra = ["fastapi"] },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "account", editable = "services/account" },
     { name = "bss-shared", editable = "shared" },
     { name = "fastapi", specifier = ">=0.115" },
     { name = "mongita", specifier = ">=1.2" },
     { name = "product-order", editable = "services/product_order" },
+    { name = "resource-inventory", editable = "services/resource_inventory" },
     { name = "service-registry", editable = "services/service_registry" },
     { name = "strawberry-graphql", extras = ["fastapi"], specifier = ">=0.240" },
 ]

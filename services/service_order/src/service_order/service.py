@@ -3,12 +3,14 @@ import threading
 from collections.abc import Callable
 from datetime import datetime
 
+from account.client import AccountClient
 from bss_shared.clock import utcnow
 from bss_shared.config import CONTEXT_PATH
 from bss_shared.errors import ConflictError, NotFoundError
 from bss_shared.events import publish
 from product_order.client import OrderClient, ProductOrder, ProductOrderItem
 from product_order.events import ProductOrderCreateEvent
+from resource_inventory.client import ResourceInventoryClient
 from service_order import dto, models
 from service_order.events import ServiceOrderStateChangeEvent
 from service_order.repository import ServiceOrderRepository
@@ -66,11 +68,15 @@ class ServiceOrderService:
         repo: ServiceOrderRepository,
         orders: OrderClient,
         registry_client: ServiceRegistryClient,
+        accounts: AccountClient,
+        resources: ResourceInventoryClient,
         clock: Callable[[], datetime] = utcnow,
     ):
         self.repo = repo
         self.orders = orders
         self.registry = registry_client
+        self.accounts = accounts
+        self.resources = resources
         self.clock = clock
 
     def get_service_order(self, id: str) -> dto.ServiceOrder:
@@ -132,8 +138,15 @@ class ServiceOrderService:
         for item in row.items:
             item.state = "inProgress"
         self.repo.save(row)
+        billing_account = self._billing_account(order)
         for item, line in zip(row.items, order.product_order_item):
-            service = self.registry.create_service(self._service_input(row, item, order, line))
+            # The number is allocated before the Service exists. If a later item fails, earlier
+            # allocations stay (PoC, no rollback).
+            for resource in line.product.realizing_resource:
+                self.resources.allocate_resource(resource.id)
+            service = self.registry.create_service(
+                self._service_input(row, item, order, line, billing_account)
+            )
             item.service = models.ServiceRef(id=service.id, name=service.name, state=service.state)
             item.state = "completed"
             self.repo.save(row)
@@ -147,6 +160,7 @@ class ServiceOrderService:
         item: models.OrderItem,
         order: ProductOrder,
         line: ProductOrderItem,
+        billing_account: registry.EntityRef,
     ) -> registry.ServiceInput:
         offering = line.product_offering
         return registry.ServiceInput(
@@ -169,8 +183,23 @@ class ServiceOrderService:
                     "customer", registry.PartyRoleRef(row.customer_id, row.customer_name, "Customer")
                 )
             ],
+            related_entity=[registry.RelatedEntity("billingAccount", billing_account)],
             service_order_item=[registry.RelatedServiceOrderItem(row.id, item.id, "originator")],
         )
+
+    def _billing_account(self, order: ProductOrder) -> registry.EntityRef:
+        """The account chosen at checkout; fulfilment never creates one."""
+        if order.billing_account is None:
+            raise ConflictError(f"Product order {order.id} has no billing account")
+        customer = next(p for p in order.related_party if p.role == "customer").party_or_party_role
+        try:
+            account = self.accounts.get_account_of(customer.id, order.billing_account.id)
+        except NotFoundError:
+            raise ConflictError(
+                f"Billing account {order.billing_account.id} of product order {order.id} "
+                f"does not exist or does not belong to customer {customer.id}"
+            ) from None
+        return registry.EntityRef(account.id, account.name, "BillingAccount")
 
     def _fail(self, row: models.ServiceOrder, message: str) -> None:
         # The product order stays inProgress: someone has to look at it.

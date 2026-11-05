@@ -4,7 +4,9 @@ from service_order.db import database, init_db
 from service_order.dto import ServiceOrder
 from service_order.service import ServiceOrderService
 from service_order.repository import ServiceOrderRepository
+from account.client import AccountClient
 from product_order.client import OrderClient
+from resource_inventory.client import ResourceInventoryClient
 from service_registry.client import ServiceRegistryClient
 
 __all__ = ["ServiceOrder", "ServiceOrderClient"]
@@ -13,7 +15,11 @@ __all__ = ["ServiceOrder", "ServiceOrderClient"]
 def _service() -> ServiceOrderService:
     init_db()
     return ServiceOrderService(
-        ServiceOrderRepository(database), OrderClient(), ServiceRegistryClient()
+        ServiceOrderRepository(database),
+        OrderClient(),
+        ServiceRegistryClient(),
+        AccountClient(),
+        ResourceInventoryClient(),
     )
 
 
