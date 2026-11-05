@@ -1465,3 +1465,59 @@
   color: var(--muted);
   font-size: 0.9rem;
 }
+
+/* Billing details step */
+.billing {
+  max-width: 560px;
+}
+.billing__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.8rem;
+}
+.choices {
+  display: grid;
+  gap: 0.7rem;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+}
+.choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--band);
+  cursor: pointer;
+}
+.choice.is-selected {
+  border-color: var(--text);
+  box-shadow: 0 0 0 3px var(--lemon);
+  background: var(--surface);
+}
+.choice input {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 0.15rem;
+  accent-color: var(--ink);
+}
+.choice__body {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+}
+.choice__name {
+  font-weight: 700;
+}
+.choice__line {
+  color: var(--muted);
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+.choices__add {
+  justify-self: start;
+}

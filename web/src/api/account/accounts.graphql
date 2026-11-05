@@ -1,0 +1,40 @@
+fragment BillingAccountFields on BillingAccount {
+  id
+  name
+  contact {
+    id
+    contactName
+    contactMedium {
+      __typename
+      ... on EmailContactMedium {
+        emailAddress
+      }
+      ... on GeographicAddressContactMedium {
+        street1
+        street2
+        city
+        stateOrProvince
+        postCode
+        country
+      }
+    }
+  }
+}
+
+query BillingAccounts {
+  billingAccountList {
+    ...BillingAccountFields
+  }
+}
+
+query BillingAccount($id: String!) {
+  billingAccount(id: $id) {
+    ...BillingAccountFields
+  }
+}
+
+mutation CreateBillingAccount($name: String!, $contact: [ContactInput!]!) {
+  createBillingAccount(name: $name, contact: $contact) {
+    ...BillingAccountFields
+  }
+}
