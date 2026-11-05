@@ -855,3 +855,113 @@
   justify-items: start;
   gap: 0.6rem;
 }
+
+/* ---------- my account ---------- */
+.account__gate {
+  max-width: 560px;
+}
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 1.4rem;
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+}
+.tabs__tab {
+  min-height: 48px;
+  padding: 0 1.1rem;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.tabs__tab:hover {
+  color: var(--text);
+}
+.tabs__tab[aria-selected='true'] {
+  border-bottom-color: var(--text);
+  color: var(--text);
+}
+:root[data-theme='dark'] .tabs__tab[aria-selected='true'] {
+  border-bottom-color: var(--lemon);
+}
+.tabs__tab:focus-visible,
+.account__panel:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.rows {
+  display: grid;
+  gap: 0.8rem;
+  list-style: none;
+  padding: 0;
+}
+.rows__note {
+  margin-bottom: 0.8rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.row {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1.1rem 1.2rem;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+.row__title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.row__link {
+  display: inline-block;
+  min-height: 44px;
+  line-height: 44px;
+  color: var(--link);
+  text-underline-offset: 3px;
+}
+.row__meta {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.row__facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 0.8rem 1.2rem;
+}
+.row__facts dt {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.row__facts dd {
+  margin: 0.2rem 0 0;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.row__total {
+  display: block;
+  font-weight: 600;
+}
+.row__total small,
+.row__none {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.row--skeleton {
+  min-height: 92px;
+}
+@media (min-width: 900px) {
+  .row {
+    grid-template-columns: minmax(180px, 1fr) 2.4fr;
+    align-items: center;
+  }
+}

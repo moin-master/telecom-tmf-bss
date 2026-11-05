@@ -19,6 +19,8 @@ const config: CodegenConfig = {
     'src/api/generated/order/': service('order'),
     'src/api/generated/product-catalog/': service('product-catalog'),
     'src/api/generated/resource/': service('resource'),
+    'src/api/generated/service-order/': service('service-order'),
+    'src/api/generated/service-registry/': service('service-registry'),
     'src/api/generated/shopping-cart/': service('shopping-cart'),
   },
 }

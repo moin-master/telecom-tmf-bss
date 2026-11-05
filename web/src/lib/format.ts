@@ -37,3 +37,10 @@ export function otherPrices<T extends Price>(prices: T[], headline?: T): T[] {
 export function phoneNumber(msisdn: string): string {
   return msisdn.length > 6 ? `+${msisdn.slice(0, 3)} ${msisdn.slice(3, 6)} ${msisdn.slice(6)}` : `+${msisdn}`
 }
+
+// ISO 8601 UTC -> a short local date. Display only.
+export function shortDate(iso?: string | null): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
+}

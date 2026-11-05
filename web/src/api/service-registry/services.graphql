@@ -1,0 +1,16 @@
+query Services {
+  serviceList {
+    id
+    name
+    state
+    startDate
+    serviceCharacteristic {
+      name
+      value
+    }
+    supportingResource {
+      id
+      name
+    }
+  }
+}

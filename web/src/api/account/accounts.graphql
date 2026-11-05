@@ -1,6 +1,7 @@
 fragment BillingAccountFields on BillingAccount {
   id
   name
+  state
   contact {
     id
     contactName
