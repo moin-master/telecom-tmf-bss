@@ -3,18 +3,31 @@ from collections.abc import Callable
 from datetime import datetime
 
 from bss_shared.clock import utcnow
-from bss_shared.errors import BadRequestError, ForbiddenError, NotFoundError
+from bss_shared.errors import BadRequestError, ConflictError, ForbiddenError, NotFoundError
+from bss_shared.events import publish
 from account.client import AccountClient
 from customer.client import CustomerClient
 from identity.client import IdentityClient
 from product_catalog.client import ProductCatalogClient, offering_needs_number
 from product_order import dto, models
+from product_order.events import ProductOrderCreateEvent, ProductOrderStateChangeEvent
 from product_order.repository import OrderRepository
+from service_order.events import ServiceOrderStateChangeEvent
 from shopping_cart import client as cart
 from shopping_cart.client import ShoppingCartClient
 
 # Mongita has no transactions, so the next id is taken and saved under one lock.
 _CREATE_LOCK = threading.Lock()
+
+# TMF622 order and item states, and the moves fulfilment may make.
+STATES = {
+    "acknowledged", "rejected", "pending", "held", "inProgress", "assessingCancellation",
+    "pendingCancellation", "cancelled", "completed", "failed", "partial",
+}
+_MOVES = {
+    "acknowledged": {"inProgress"},
+    "inProgress": {"completed", "failed", "partial"},
+}
 
 
 def _price_model(p: cart.CartPrice) -> models.OrderPrice:
@@ -174,7 +187,37 @@ class OrderService:
             self.repo.save(row)
         # The order holds the phone numbers now, so they stay reserved.
         self.carts.delete_cart(cart_id, keep_reservations=True)
+        # Fulfilment runs inside this call, so read the order again: it shows the state after it.
+        publish(ProductOrderCreateEvent(product_order_id=row.id))
+        return _order(self.repo.get(row.id) or row)
+
+    def get_order_for_fulfilment(self, id: str) -> dto.ProductOrder:
+        """Internal read for the fulfilment flow; no sign-in token."""
+        row = self.repo.get(id)
+        if row is None:
+            raise NotFoundError("ProductOrder", id)
         return _order(row)
+
+    def set_state(self, id: str, state: str) -> dto.ProductOrder:
+        """Internal move of the order and its items; acknowledged, inProgress, then completed, failed or partial."""
+        row = self.repo.get(id)
+        if row is None:
+            raise NotFoundError("ProductOrder", id)
+        if state not in STATES:
+            raise BadRequestError(f"state must be one of {sorted(STATES)}")
+        if state not in _MOVES.get(row.state, set()):
+            raise ConflictError(f"ProductOrder {id} cannot move from {row.state} to {state}")
+        row.state = state
+        for item in row.items:
+            item.state = state
+        self.repo.save(row)
+        publish(ProductOrderStateChangeEvent(product_order_id=id, state=state))
+        return _order(row)
+
+    def on_service_order_state_change(self, event: ServiceOrderStateChangeEvent) -> None:
+        # A failed service order leaves the order inProgress for someone to resolve.
+        if event.state == "completed":
+            self.set_state(event.product_order_id, "completed")
 
     def get_order(self, token: str | None, id: str) -> dto.ProductOrder:
         caller = self.identity.me(token)
