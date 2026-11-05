@@ -8,6 +8,7 @@ from party.app import create_app as create_party
 from product_order.app import create_app as create_product_order
 from product_catalog.app import create_app as create_product_catalog
 from resource_inventory.app import create_app as create_resource_inventory
+from service_registry.app import create_app as create_service_registry
 from shopping_cart.app import create_app as create_shopping_cart
 
 # URL path -> service factory. Paths come from docs/project-routing.md.
@@ -19,6 +20,7 @@ SERVICES = {
     "/party": create_party,
     "/product-catalog": create_product_catalog,
     "/resource": create_resource_inventory,
+    "/service-registry": create_service_registry,
     "/shopping-cart": create_shopping_cart,
 }
 

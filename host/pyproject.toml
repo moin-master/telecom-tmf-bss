@@ -12,6 +12,7 @@ dependencies = [
     "product-catalog",
     "product-order",
     "resource-inventory",
+    "service-registry",
     "shopping-cart",
     "fastapi>=0.115",
     "uvicorn>=0.30",
@@ -26,6 +27,7 @@ party = { workspace = true }
 product-catalog = { workspace = true }
 product-order = { workspace = true }
 resource-inventory = { workspace = true }
+service-registry = { workspace = true }
 shopping-cart = { workspace = true }
 
 [build-system]
