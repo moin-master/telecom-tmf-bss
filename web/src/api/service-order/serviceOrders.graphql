@@ -1,0 +1,11 @@
+query ServiceOrders {
+  serviceOrderList {
+    id
+    state
+    completionDate
+    externalReference {
+      id
+    }
+    errorMessage
+  }
+}

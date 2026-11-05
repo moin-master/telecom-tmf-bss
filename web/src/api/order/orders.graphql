@@ -58,3 +58,9 @@ mutation PlaceOrder($cartId: String!, $billingAccountId: String) {
     ...OrderFields
   }
 }
+
+query Orders {
+  productOrderList {
+    ...OrderFields
+  }
+}

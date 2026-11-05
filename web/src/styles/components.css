@@ -112,7 +112,27 @@
   }
 }
 @media (max-width: 440px) {
-  .nav a:not(.cart-pill) {
+  .brand__word {
+    display: none;
+  }
+  .nav {
+    gap: 0.1rem;
+  }
+  .nav a,
+  .nav__signout {
+    white-space: nowrap;
+  }
+  .nav a {
+    padding-inline: 0.5rem;
+    font-size: 0.88rem;
+  }
+  .nav .cart-pill {
+    padding-inline: 0.8rem;
+  }
+  .nav__account {
+    gap: 0;
+  }
+  .nav a:not(.cart-pill):not(.nav__me) {
     display: none;
   }
 }

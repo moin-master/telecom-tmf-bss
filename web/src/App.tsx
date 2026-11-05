@@ -1,5 +1,6 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { Layout } from './components/Layout'
+import { Account } from './pages/Account'
 import { Cart } from './pages/Cart'
 import { Checkout } from './pages/Checkout'
 import { Configure } from './pages/Configure'
@@ -14,6 +15,7 @@ const router = createBrowserRouter([
     children: [
       { path: '/', element: <Home /> },
       { path: '/offers/:id', element: <OfferDetail /> },
+      { path: '/account', element: <Account /> },
       { path: '/cart', element: <Cart /> },
       { path: '/checkout', element: <Checkout /> },
       { path: '/orders/:id', element: <OrderConfirmation /> },

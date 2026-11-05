@@ -24,13 +24,16 @@ export function Header() {
           </NavLink>
           {profile ? (
             <span className="nav__account">
+              <NavLink to="/account" className="nav__me">
+                My account
+              </NavLink>
               <span className="nav__name">{profile.name}</span>
               <button type="button" className="nav__signout" onClick={() => void signOut()}>
                 Sign out
               </button>
             </span>
           ) : (
-            <NavLink to="/checkout" className="nav__account">
+            <NavLink to="/account" className="nav__account nav__me">
               Sign in
             </NavLink>
           )}
