@@ -76,18 +76,22 @@ def _service(info: strawberry.Info):
     return info.context["service_orders"]
 
 
+def _token(info: strawberry.Info) -> str | None:
+    return info.context["token"]
+
+
 @strawberry.type
 class Query:
     @strawberry.field
     def service_order(self, info: strawberry.Info, id: str) -> ServiceOrder:
-        return _convert(_service(info).get_service_order(id))
+        return _convert(_service(info).get_my_service_order(_token(info), id))
 
     @strawberry.field
     def service_order_list(
         self, info: strawberry.Info, filter: ServiceOrderFilter | None = None
     ) -> list[ServiceOrder]:
         f = filter or ServiceOrderFilter()
-        return _convert(_service(info).list_service_orders(f.related_party_id))
+        return _convert(_service(info).list_my_service_orders(_token(info), f.related_party_id))
 
 
 # Service orders are created by the fulfilment handler; there is no mutation.

@@ -5,6 +5,7 @@ from service_order.dto import ServiceOrder
 from service_order.service import ServiceOrderService
 from service_order.repository import ServiceOrderRepository
 from account.client import AccountClient
+from identity.client import IdentityClient
 from product_order.client import OrderClient
 from resource_inventory.client import ResourceInventoryClient
 from service_registry.client import ServiceRegistryClient
@@ -20,6 +21,7 @@ def _service() -> ServiceOrderService:
         ServiceRegistryClient(),
         AccountClient(),
         ResourceInventoryClient(),
+        IdentityClient(),
     )
 
 

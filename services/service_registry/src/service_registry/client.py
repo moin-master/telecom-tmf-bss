@@ -1,5 +1,6 @@
 """The only module other services import. In-process today; an HTTP version can replace it later."""
 
+from identity.client import IdentityClient
 from service_registry.db import database, init_db
 from service_registry.dto import (
     EntityRef,
@@ -44,7 +45,7 @@ def _ensure_ready() -> None:
 
 def _service() -> ServiceRegistryService:
     _ensure_ready()
-    return ServiceRegistryService(ServiceRepository(database))
+    return ServiceRegistryService(ServiceRepository(database), IdentityClient())
 
 
 class ServiceRegistryClient:
