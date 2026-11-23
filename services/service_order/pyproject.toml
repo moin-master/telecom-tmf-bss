@@ -9,6 +9,7 @@ dependencies = [
     "fastapi>=0.115",
     "identity",
     "mongita>=1.2",
+    "product-catalog",
     "product-order",
     "resource-inventory",
     "service-registry",
@@ -22,6 +23,7 @@ service-registry = { workspace = true }
 account = { workspace = true }
 resource-inventory = { workspace = true }
 identity = { workspace = true }
+product-catalog = { workspace = true }
 
 [build-system]
 requires = ["uv_build>=0.11.11,<0.12"]

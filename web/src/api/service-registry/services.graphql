@@ -1,16 +1,47 @@
-query Services {
-  serviceList {
+fragment ServiceFields on Service {
+  id
+  name
+  state
+  startDate
+  isBundle
+  serviceType
+  supportingService {
     id
     name
-    state
-    startDate
-    serviceCharacteristic {
-      name
-      value
-    }
-    supportingResource {
+    referredType
+  }
+  serviceRelationship {
+    relationshipType
+    service {
       id
       name
+      referredType
     }
+  }
+  relatedEntity {
+    role
+    entity {
+      id
+      name
+      referredType
+    }
+  }
+  serviceOrderItem {
+    serviceOrderId
+    itemId
+  }
+  serviceCharacteristic {
+    name
+    value
+  }
+  supportingResource {
+    id
+    name
+  }
+}
+
+query Services {
+  serviceList {
+    ...ServiceFields
   }
 }

@@ -5,6 +5,7 @@ from account.client import AccountClient
 from bss_shared.auth import bearer_token
 from bss_shared.events import Event, subscribe
 from identity.client import IdentityClient
+from product_catalog.client import ProductCatalogClient
 from product_order.client import OrderClient
 from product_order.events import ProductOrderCreateEvent
 from resource_inventory.client import ResourceInventoryClient
@@ -23,6 +24,7 @@ def _service() -> ServiceOrderService:
         AccountClient(),
         ResourceInventoryClient(),
         IdentityClient(),
+        ProductCatalogClient(),
     )
 
 

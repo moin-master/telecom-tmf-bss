@@ -9,6 +9,7 @@ from bss_shared.config import CONTEXT_PATH
 from bss_shared.errors import ConflictError, ForbiddenError, NotFoundError
 from bss_shared.events import publish
 from identity.client import IdentityClient
+from product_catalog.client import BundledProductOffering, ProductCatalogClient
 from product_order.client import OrderClient, ProductOrder, ProductOrderItem
 from product_order.events import ProductOrderCreateEvent
 from resource_inventory.client import ResourceInventoryClient
@@ -28,6 +29,18 @@ _MOVES = {
 
 # Mongita has no transactions, so the next id is taken and saved under one lock.
 _CREATE_LOCK = threading.Lock()
+
+
+# Plan and add-on point at the SIM and the plan, so those are created first.
+_ROLE_ORDER = {"sim": 0, "plan": 1, "addOn": 2, "device": 3}
+
+
+def _default(part: BundledProductOffering) -> int:
+    return part.bundled_product_offering_option.number_rel_offer_default
+
+
+def _service_ref(service: registry.Service) -> registry.ServiceRef:
+    return registry.ServiceRef(service.id, service.name)
 
 
 def _ref(row: models.ServiceRef) -> dto.ServiceRef:
@@ -72,6 +85,7 @@ class ServiceOrderService:
         accounts: AccountClient,
         resources: ResourceInventoryClient,
         identity: IdentityClient,
+        catalog: ProductCatalogClient,
         clock: Callable[[], datetime] = utcnow,
     ):
         self.repo = repo
@@ -80,6 +94,7 @@ class ServiceOrderService:
         self.accounts = accounts
         self.resources = resources
         self.identity = identity
+        self.catalog = catalog
         self.clock = clock
 
     def get_my_service_order(self, token: str | None, id: str) -> dto.ServiceOrder:
@@ -165,15 +180,63 @@ class ServiceOrderService:
             # allocations stay (PoC, no rollback).
             for resource in line.product.realizing_resource:
                 self.resources.allocate_resource(resource.id)
-            service = self.registry.create_service(
-                self._service_input(row, item, order, line, billing_account)
-            )
+            service = self._create_services(row, item, order, line, billing_account)
             item.service = models.ServiceRef(id=service.id, name=service.name, state=service.state)
             item.state = "completed"
             self.repo.save(row)
         row.state = _move(row.state, "completed", "Service order")
         row.completion_date = self.clock()
         self.repo.save(row)
+
+    def _create_services(
+        self,
+        row: models.ServiceOrder,
+        item: models.OrderItem,
+        order: ProductOrder,
+        line: ProductOrderItem,
+        billing_account: registry.EntityRef,
+    ) -> registry.Service:
+        """Returns the root Service of the item: the bundle, or the single leaf."""
+        offering = self.catalog.get_offering(line.product_offering.id)
+        if not offering.is_bundle:
+            return self.registry.create_service(
+                self._service_input(row, item, order, line, billing_account, offering.name, offering.id)
+            )
+        # Optional add-ons (default 0) are not created: the order does not record the choice.
+        parts = [b for b in offering.bundled_product_offering if _default(b) >= 1]
+        # Created in dependency order so a dependent child can point at its target.
+        parts.sort(key=lambda b: _ROLE_ORDER.get(b.role, len(_ROLE_ORDER)))
+        children: dict[str, registry.Service] = {}
+        created: list[registry.Service] = []
+        for part in parts:
+            carries_number = part.role == "sim" and "sim" not in children
+            target = {"plan": "sim", "addOn": "plan"}.get(part.role)
+            relationships = (
+                [registry.ServiceRelationship("dependsOn", _service_ref(children[target]))]
+                if target in children
+                else []
+            )
+            child = self.registry.create_service(
+                self._service_input(
+                    row, item, order, line, billing_account, part.name, part.id,
+                    service_type=part.role,
+                    with_number=carries_number,
+                    with_rest=False,
+                    relationships=relationships,
+                )
+            )
+            children.setdefault(part.role, child)
+            created.append(child)
+        # A bundle without a SIM part keeps the number on the bundle itself.
+        return self.registry.create_service(
+            self._service_input(
+                row, item, order, line, billing_account, offering.name, offering.id,
+                service_type="bundle",
+                with_number="sim" not in children,
+                is_bundle=True,
+                supporting=[_service_ref(c) for c in created],
+            )
+        )
 
     def _service_input(
         self,
@@ -182,30 +245,47 @@ class ServiceOrderService:
         order: ProductOrder,
         line: ProductOrderItem,
         billing_account: registry.EntityRef,
+        name: str,
+        offering_id: str,
+        *,
+        service_type: str | None = None,
+        with_number: bool = True,
+        with_rest: bool = True,
+        is_bundle: bool = False,
+        supporting: list[registry.ServiceRef] | None = None,
+        relationships: list[registry.ServiceRelationship] | None = None,
     ) -> registry.ServiceInput:
-        offering = line.product_offering
         return registry.ServiceInput(
-            name=offering.name,
+            name=name,
             state="active",
+            service_type=service_type,
             # The catalog has no service specification, so one is derived from the offering.
-            service_specification=registry.ServiceSpecificationRef(
-                id=f"SSPEC-{offering.id}", name=offering.name
-            ),
+            service_specification=registry.ServiceSpecificationRef(id=f"SSPEC-{offering_id}", name=name),
             characteristics=[
                 registry.ServiceCharacteristic(c.name, c.value)
                 for c in line.product.product_characteristic
+                # The number (TEL_MSISDN) goes with the SIM; the rest describes the whole item.
+                if (c.name == "TEL_MSISDN" and with_number) or (c.name != "TEL_MSISDN" and with_rest)
             ],
             supporting_resources=[
                 registry.ResourceRef(r.id, r.name, "LogicalResource")
                 for r in line.product.realizing_resource
+                if with_number
             ],
             related_party=[
                 registry.RelatedParty(
                     "customer", registry.PartyRoleRef(row.customer_id, row.customer_name, "Customer")
                 )
             ],
-            related_entity=[registry.RelatedEntity("billingAccount", billing_account)],
+            related_entity=[
+                registry.RelatedEntity("billingAccount", billing_account),
+                registry.RelatedEntity("productOrder", registry.EntityRef(order.id, order.id, "ProductOrder")),
+            ],
+            # Items map one to one: the service order item id is the product order item id.
             service_order_item=[registry.RelatedServiceOrderItem(row.id, item.id, "originator")],
+            is_bundle=is_bundle,
+            supporting_service=supporting or [],
+            service_relationship=relationships or [],
         )
 
     def _billing_account(self, order: ProductOrder) -> registry.EntityRef:

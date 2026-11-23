@@ -43,6 +43,12 @@ def _service(row: models.Service) -> dto.Service:
             dto.RelatedServiceOrderItem(i.service_order_id, i.item_id, i.role)
             for i in row.service_order_items
         ],
+        is_bundle=row.is_bundle,
+        supporting_service=[dto.ServiceRef(r.id, r.name, r.referred_type) for r in row.supporting_services],
+        service_relationship=[
+            dto.ServiceRelationship(r.relationship_type, dto.ServiceRef(r.service_id, r.service_name))
+            for r in row.service_relationships
+        ],
     )
 
 
@@ -69,6 +75,44 @@ class ServiceRegistryService:
         if related_party_id and related_party_id != customer_id:
             raise ForbiddenError("You can only list your own services")
         return [_service(r) for r in self.repo.list(related_party_id=customer_id) if _is_customer(r, customer_id)]
+
+    def get_my_service_tree(self, token: str | None, id: str) -> dto.ServiceTreeNode:
+        """For GraphQL: the service with its children nested, own records only."""
+        customer_id = self.identity.me(token).customer_id
+        row = self.repo.get(id)
+        if row is None or not _is_customer(row, customer_id):
+            raise NotFoundError("Service", id)
+        return self._node(row, customer_id, {row.id})
+
+    def _node(self, row: models.Service, customer_id: str, path: set[str]) -> dto.ServiceTreeNode:
+        children = []
+        for ref in row.supporting_services:
+            child = self.repo.get(ref.id)
+            # The path guards against a cycle in the data; other customers' services are left out.
+            if child is None or ref.id in path or not _is_customer(child, customer_id):
+                continue
+            children.append(self._node(child, customer_id, path | {ref.id}))
+        flat = _service(row)
+        return dto.ServiceTreeNode(
+            id=flat.id,
+            name=flat.name,
+            state=flat.state,
+            service_type=flat.service_type,
+            is_bundle=flat.is_bundle,
+            start_date=flat.start_date,
+            service_characteristic=flat.service_characteristic,
+            supporting_resource=flat.supporting_resource,
+            related_entity=flat.related_entity,
+            service_order_item=flat.service_order_item,
+            service_relationship=[self._resolved(r) for r in row.service_relationships],
+            children=children,
+        )
+
+    def _resolved(self, rel: models.ServiceRelationship) -> dto.ServiceRelationship:
+        """The related Service ref with its current name."""
+        target = self.repo.get(rel.service_id)
+        name = target.name if target else rel.service_name
+        return dto.ServiceRelationship(rel.relationship_type, dto.ServiceRef(rel.service_id, name))
 
     # Open methods below are for other services (through the client), without a token.
     def get_service(self, id: str) -> dto.Service:
@@ -130,6 +174,19 @@ class ServiceRegistryService:
                 service_order_items=[
                     models.ServiceOrderItem(service_order_id=i.service_order_id, item_id=i.item_id, role=i.role)
                     for i in data.service_order_item
+                ],
+                is_bundle=data.is_bundle,
+                supporting_services=[
+                    models.ServiceRef(id=r.id, name=r.name, referred_type=r.referred_type)
+                    for r in data.supporting_service
+                ],
+                service_relationships=[
+                    models.ServiceRelationship(
+                        relationship_type=r.relationship_type,
+                        service_id=r.service.id,
+                        service_name=r.service.name,
+                    )
+                    for r in data.service_relationship
                 ],
             )
             self.repo.save(row)

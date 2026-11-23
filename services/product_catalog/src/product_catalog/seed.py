@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from product_catalog.repository import CatalogRepository
 from product_catalog.models import (
+    Attachment,
     BundledEntry,
     Relation,
     Term,
@@ -17,6 +18,8 @@ from product_catalog.models import (
 UPDATED = datetime(2026, 10, 1, tzinfo=timezone.utc)
 CURRENCY = "USD"
 # Smartphones that can be sold with the protection plan.
+# Active but not on sale to the public (expired or not yet started): no picture.
+NO_IMAGE = {"PO-1007", "PO-1008"}
 PROTECTABLE = {"PO-1004", "PO-1009", "PO-1010", "PO-1011", "PO-1012"}
 
 
@@ -421,6 +424,21 @@ def load(repo: CatalogRepository) -> None:
             Relation(id=double.id, relationship_type="multiBundleDiscount"),
             Relation(id=contract.id, relationship_type="contract"),
         ]
+
+    # One picture per sellable offering. Promotions, contracts and the withdrawn
+    # plans (PO-1006 to PO-1008) have none. Saving below replaces by id, so a
+    # restart adds the pictures to catalog rows that already exist.
+    for offer in [*offerings, esim, *bundles, protection]:
+        if offer.is_sellable and offer.lifecycle_status == "Active" and offer.id not in NO_IMAGE:
+            offer.attachments = [
+                Attachment(
+                    name=offer.name,
+                    url=f"/images/offerings/{offer.id}.svg",
+                    mime_type="image/svg+xml",
+                    attachment_type="image",
+                    description=offer.description,
+                )
+            ]
 
     repo.save_all(
         [catalog, plans, devices, addons, prepaid, bundles_cat, promos_cat, *offerings, esim,

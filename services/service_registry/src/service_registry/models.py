@@ -1,7 +1,6 @@
 """Documents stored by this service, one Mongita collection per class.
 
-Skipped TMF638 fields: feature, place, serviceRelationship, supportingService,
-operatingStatus, intent, and the rest of the Service schema that the scenario does not need.
+Skipped TMF638 fields: feature, place, operatingStatus, intent, and the rest of the Service schema that the scenario does not need.
 """
 
 from dataclasses import dataclass, field
@@ -53,6 +52,20 @@ class ServiceOrderItem:
 
 
 @dataclass(kw_only=True)
+class ServiceRef:
+    id: str
+    name: str
+    referred_type: str = "Service"
+
+
+@dataclass(kw_only=True)
+class ServiceRelationship:
+    relationship_type: str
+    service_id: str
+    service_name: str
+
+
+@dataclass(kw_only=True)
 class Service:
     collection: ClassVar[str] = "service"
 
@@ -69,3 +82,7 @@ class Service:
     related_parties: list[RelatedParty] = field(default_factory=list)
     related_entities: list[RelatedEntity] = field(default_factory=list)
     service_order_items: list[ServiceOrderItem] = field(default_factory=list)
+    # Services created before the service tree have none of these (flat, not a bundle).
+    is_bundle: bool = False
+    supporting_services: list[ServiceRef] = field(default_factory=list)
+    service_relationships: list[ServiceRelationship] = field(default_factory=list)

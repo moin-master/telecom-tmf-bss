@@ -124,6 +124,16 @@ class ProductOfferingPrice:
     regular_price: Money | None
 
 
+@_for(dto.Attachment)
+@strawberry.type
+class Attachment:
+    name: str
+    url: str
+    mime_type: str
+    attachment_type: str
+    description: str | None
+
+
 @_for(dto.ProductOffering)
 @strawberry.type
 class ProductOffering:
@@ -142,6 +152,7 @@ class ProductOffering:
     bundled_product_offering: list[BundledProductOffering]
     product_offering_relationship: list[ProductOfferingRelationship]
     product_offering_term: list[ProductOfferingTerm]
+    attachment: list[Attachment]
 
 
 @_for(dto.Category)

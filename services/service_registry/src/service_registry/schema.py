@@ -70,6 +70,22 @@ class RelatedServiceOrderItem:
     role: str
 
 
+@_for(dto.ServiceRef)
+@strawberry.type
+class ServiceRef:
+    id: str
+    name: str
+    referred_type: str
+
+
+@_for(dto.ServiceRelationship)
+@strawberry.type
+class ServiceRelationship:
+    # dependsOn is the only type used (project vocabulary).
+    relationship_type: str
+    service: ServiceRef
+
+
 @_for(dto.Service)
 @strawberry.type
 class Service:
@@ -88,6 +104,26 @@ class Service:
     related_party: list[RelatedParty]
     related_entity: list[RelatedEntity]
     service_order_item: list[RelatedServiceOrderItem]
+    is_bundle: bool
+    supporting_service: list[ServiceRef]
+    service_relationship: list[ServiceRelationship]
+
+
+@_for(dto.ServiceTreeNode)
+@strawberry.type
+class ServiceTreeNode:
+    id: str
+    name: str
+    state: str
+    service_type: str | None
+    is_bundle: bool
+    start_date: datetime | None
+    service_characteristic: list[ServiceCharacteristic]
+    supporting_resource: list[ResourceRef]
+    related_entity: list[RelatedEntity]
+    service_order_item: list[RelatedServiceOrderItem]
+    service_relationship: list[ServiceRelationship]
+    children: list["ServiceTreeNode"]
 
 
 @strawberry.input
@@ -116,6 +152,10 @@ class Query:
     ) -> list[Service]:
         f = filter or ServiceFilter()
         return _convert(_service(info).list_my_services(_token(info), f.related_party_id))
+
+    @strawberry.field
+    def service_tree(self, info: strawberry.Info, id: str) -> ServiceTreeNode:
+        return _convert(_service(info).get_my_service_tree(_token(info), id))
 
 
 # Services are created in process through the client; there is no mutation.

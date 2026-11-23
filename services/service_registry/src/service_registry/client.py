@@ -12,6 +12,8 @@ from service_registry.dto import (
     Service,
     ServiceCharacteristic,
     ServiceInput,
+    ServiceRef,
+    ServiceRelationship,
     ServiceSpecificationRef,
 )
 from service_registry.repository import ServiceRepository
@@ -27,7 +29,9 @@ __all__ = [
     "Service",
     "ServiceCharacteristic",
     "ServiceInput",
+    "ServiceRef",
     "ServiceRegistryClient",
+    "ServiceRelationship",
     "ServiceSpecificationRef",
 ]
 

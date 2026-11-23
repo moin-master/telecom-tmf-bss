@@ -2,6 +2,7 @@
 
 from product_catalog.db import database, init_db
 from product_catalog.dto import (
+    BundledProductOffering,
     ProductOffering,
     ProductOfferingPrice,
     ProductOfferingTerm,
@@ -11,6 +12,7 @@ from product_catalog.repository import CatalogRepository
 from product_catalog.service import CatalogService
 
 __all__ = [
+    "BundledProductOffering",
     "ProductCatalogClient",
     "ProductOffering",
     "ProductOfferingPrice",
