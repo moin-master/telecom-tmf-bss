@@ -14,10 +14,10 @@ import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-
  * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
  */
 type Documents = {
-    "query Services {\n  serviceList {\n    id\n    name\n    state\n    startDate\n    serviceCharacteristic {\n      name\n      value\n    }\n    supportingResource {\n      id\n      name\n    }\n  }\n}": typeof types.ServicesDocument,
+    "fragment ServiceFields on Service {\n  id\n  name\n  state\n  startDate\n  isBundle\n  serviceType\n  supportingService {\n    id\n    name\n    referredType\n  }\n  serviceRelationship {\n    relationshipType\n    service {\n      id\n      name\n      referredType\n    }\n  }\n  relatedEntity {\n    role\n    entity {\n      id\n      name\n      referredType\n    }\n  }\n  serviceOrderItem {\n    serviceOrderId\n    itemId\n  }\n  serviceCharacteristic {\n    name\n    value\n  }\n  supportingResource {\n    id\n    name\n  }\n}\n\nquery Services {\n  serviceList {\n    ...ServiceFields\n  }\n}": typeof types.ServiceFieldsFragmentDoc,
 };
 const documents: Documents = {
-    "query Services {\n  serviceList {\n    id\n    name\n    state\n    startDate\n    serviceCharacteristic {\n      name\n      value\n    }\n    supportingResource {\n      id\n      name\n    }\n  }\n}": types.ServicesDocument,
+    "fragment ServiceFields on Service {\n  id\n  name\n  state\n  startDate\n  isBundle\n  serviceType\n  supportingService {\n    id\n    name\n    referredType\n  }\n  serviceRelationship {\n    relationshipType\n    service {\n      id\n      name\n      referredType\n    }\n  }\n  relatedEntity {\n    role\n    entity {\n      id\n      name\n      referredType\n    }\n  }\n  serviceOrderItem {\n    serviceOrderId\n    itemId\n  }\n  serviceCharacteristic {\n    name\n    value\n  }\n  supportingResource {\n    id\n    name\n  }\n}\n\nquery Services {\n  serviceList {\n    ...ServiceFields\n  }\n}": types.ServiceFieldsFragmentDoc,
 };
 
 /**
@@ -37,7 +37,7 @@ export function graphql(source: string): unknown;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "query Services {\n  serviceList {\n    id\n    name\n    state\n    startDate\n    serviceCharacteristic {\n      name\n      value\n    }\n    supportingResource {\n      id\n      name\n    }\n  }\n}"): (typeof documents)["query Services {\n  serviceList {\n    id\n    name\n    state\n    startDate\n    serviceCharacteristic {\n      name\n      value\n    }\n    supportingResource {\n      id\n      name\n    }\n  }\n}"];
+export function graphql(source: "fragment ServiceFields on Service {\n  id\n  name\n  state\n  startDate\n  isBundle\n  serviceType\n  supportingService {\n    id\n    name\n    referredType\n  }\n  serviceRelationship {\n    relationshipType\n    service {\n      id\n      name\n      referredType\n    }\n  }\n  relatedEntity {\n    role\n    entity {\n      id\n      name\n      referredType\n    }\n  }\n  serviceOrderItem {\n    serviceOrderId\n    itemId\n  }\n  serviceCharacteristic {\n    name\n    value\n  }\n  supportingResource {\n    id\n    name\n  }\n}\n\nquery Services {\n  serviceList {\n    ...ServiceFields\n  }\n}"): (typeof documents)["fragment ServiceFields on Service {\n  id\n  name\n  state\n  startDate\n  isBundle\n  serviceType\n  supportingService {\n    id\n    name\n    referredType\n  }\n  serviceRelationship {\n    relationshipType\n    service {\n      id\n      name\n      referredType\n    }\n  }\n  relatedEntity {\n    role\n    entity {\n      id\n      name\n      referredType\n    }\n  }\n  serviceOrderItem {\n    serviceOrderId\n    itemId\n  }\n  serviceCharacteristic {\n    name\n    value\n  }\n  supportingResource {\n    id\n    name\n  }\n}\n\nquery Services {\n  serviceList {\n    ...ServiceFields\n  }\n}"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};

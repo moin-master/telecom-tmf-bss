@@ -58,6 +58,21 @@ class RelatedServiceOrderItem:
 
 
 @dataclass(frozen=True)
+class ServiceRef:
+    id: str
+    name: str
+    referred_type: str = "Service"
+
+
+@dataclass(frozen=True)
+class ServiceRelationship:
+    """Project vocabulary for relationship_type: dependsOn (the spec leaves it free text)."""
+
+    relationship_type: str
+    service: ServiceRef
+
+
+@dataclass(frozen=True)
 class Service:
     id: str
     href: str
@@ -73,6 +88,27 @@ class Service:
     related_party: list[RelatedParty]
     related_entity: list[RelatedEntity]
     service_order_item: list[RelatedServiceOrderItem]
+    is_bundle: bool
+    supporting_service: list[ServiceRef]
+    service_relationship: list[ServiceRelationship]
+
+
+@dataclass(frozen=True)
+class ServiceTreeNode:
+    """A Service with its children nested; relationships point to the related Service."""
+
+    id: str
+    name: str
+    state: str
+    service_type: str | None
+    is_bundle: bool
+    start_date: datetime | None
+    service_characteristic: list[ServiceCharacteristic]
+    supporting_resource: list[ResourceRef]
+    related_entity: list[RelatedEntity]
+    service_order_item: list[RelatedServiceOrderItem]
+    service_relationship: list[ServiceRelationship]
+    children: list["ServiceTreeNode"]
 
 
 @dataclass(frozen=True)
@@ -89,3 +125,6 @@ class ServiceInput:
     related_party: list[RelatedParty] = field(default_factory=list)
     related_entity: list[RelatedEntity] = field(default_factory=list)
     service_order_item: list[RelatedServiceOrderItem] = field(default_factory=list)
+    is_bundle: bool = False
+    supporting_service: list[ServiceRef] = field(default_factory=list)
+    service_relationship: list[ServiceRelationship] = field(default_factory=list)

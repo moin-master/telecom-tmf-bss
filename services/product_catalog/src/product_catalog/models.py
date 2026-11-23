@@ -127,6 +127,17 @@ class Term:
 
 
 @dataclass(kw_only=True)
+class Attachment:
+    """TMF620 attachment (a picture here). `url` is a path served by the web app."""
+
+    name: str
+    url: str
+    mime_type: str
+    attachment_type: str
+    description: str | None = None
+
+
+@dataclass(kw_only=True)
 class ProductOffering(Lifecycle):
     collection: ClassVar[str] = "product_offering"
 
@@ -141,6 +152,7 @@ class ProductOffering(Lifecycle):
     bundled_entries: list[BundledEntry] = field(default_factory=list)
     relations: list[Relation] = field(default_factory=list)
     terms: list[Term] = field(default_factory=list)
+    attachments: list[Attachment] = field(default_factory=list)
 
     specification: ProductSpecification | None = field(default=None, metadata=TRANSIENT)
     bundled: list[tuple[BundledEntry, "ProductOffering"]] = field(

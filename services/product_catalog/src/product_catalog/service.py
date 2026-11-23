@@ -191,6 +191,12 @@ class CatalogService:
                 )
                 for t in row.terms
             ],
+            attachment=[
+                dto.Attachment(
+                    a.name, a.url, a.mime_type, a.attachment_type, a.description
+                )
+                for a in row.attachments
+            ],
         )
 
     def _category(self, row: models.Category, at: datetime) -> dto.Category:

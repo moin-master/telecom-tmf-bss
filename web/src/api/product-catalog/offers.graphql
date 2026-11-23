@@ -107,3 +107,16 @@ query Categories {
     isRoot
   }
 }
+
+# Pictures for the order views: one light query for every sellable offering, looked up by id.
+query OfferImages {
+  productOfferingList(offset: 0, limit: 100, filter: { isSellable: true }) {
+    id
+    name
+    attachment {
+      url
+      mimeType
+      attachmentType
+    }
+  }
+}

@@ -1,15 +1,24 @@
+import { useMemo } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { BillTo } from '../components/BillTo'
+import { OrderImage } from '../components/OrderImage'
+import { ServiceTreeList } from '../components/ServiceTreeList'
 import { ErrorState, StateCard } from '../components/StateViews'
 import { useAuth } from '../hooks/useAuth'
+import { useMyServices } from '../hooks/useMyServices'
+import { useOfferImages } from '../hooks/useOfferImages'
 import { useOrder } from '../hooks/useOrders'
 import { amount, totalLabel } from '../lib/cart'
 import { phoneNumber } from '../lib/format'
+import { buildServiceTrees, treesOfOrder } from '../lib/serviceTree'
 
 export function OrderConfirmation() {
   const { id = '' } = useParams()
   const { token, profile, loading: authLoading } = useAuth()
   const order = useOrder(id)
+  const services = useMyServices()
+  const images = useOfferImages()
+  const trees = useMemo(() => treesOfOrder(buildServiceTrees(services.data ?? []), id), [services.data, id])
 
   if (authLoading || (token && order.isPending)) {
     return (
@@ -50,11 +59,21 @@ export function OrderConfirmation() {
 
   return (
     <div className="wrap order">
-      <p className="kicker">Order {data.id}</p>
-      <h1 className="cart__title">Thank you{customer ? `, ${customer.name.split(' ')[0]}` : ''}</h1>
-      <p className="order__lead">
-        We have received your order. Its state is <span className="state-pill">Acknowledged</span>.
-      </p>
+      <header className="order__head">
+        <OrderImage
+          size="hero"
+          name={data.productOrderItem[0]?.productOffering.name ?? ''}
+          src={data.productOrderItem[0] ? images.data?.get(data.productOrderItem[0].productOffering.id) : undefined}
+          more={Math.max(data.productOrderItem.length - 1, 0)}
+        />
+        <div>
+          <p className="kicker">Order {data.id}</p>
+          <h1 className="cart__title">Thank you{customer ? `, ${customer.name.split(' ')[0]}` : ''}</h1>
+          <p className="order__lead">
+            We have received your order. Its state is <span className="state-pill">Acknowledged</span>.
+          </p>
+        </div>
+      </header>
 
       <div className="cart__grid">
         <ul className="order__items" aria-label="Items">
@@ -93,6 +112,15 @@ export function OrderConfirmation() {
           </Link>
         </aside>
       </div>
+
+      {trees.length > 0 && (
+        <section className="order__services" aria-labelledby="your-services">
+          <h2 id="your-services" className="order__heading">
+            Your services
+          </h2>
+          <ServiceTreeList trees={trees} orders={[data]} label="Your services" />
+        </section>
+      )}
     </div>
   )
 }

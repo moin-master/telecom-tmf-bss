@@ -1541,3 +1541,99 @@
 .choices__add {
   justify-self: start;
 }
+
+/* Service tree (account, orders, confirmation): the bundle tree with live services as tiles */
+.trees {
+  display: grid;
+  gap: 1rem;
+  list-style: none;
+  padding: 0;
+}
+.tree--service .tree__root {
+  max-width: 100%;
+}
+.tree__rooticon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 0.2rem;
+  border-radius: 50%;
+  background: var(--surface);
+  font-size: 1.2rem;
+}
+.tree__rootnum {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.tree__rootstate {
+  margin-top: 0.35rem;
+  padding: 0.1rem 0.7rem;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.75);
+  color: var(--ink);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.tree__meta {
+  margin-top: 0.5rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.node--static {
+  cursor: default;
+}
+.node--static .state-pill {
+  margin-top: 0.4rem;
+}
+.node--static .node__desc {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+/* A part that has parts of its own keeps the phone layout, whatever the width */
+.tree__kids--nested {
+  --n: 1;
+  grid-template-columns: none;
+  margin: 0.9rem 0 0 1.2rem;
+  padding-left: 1.2rem;
+  border-left: var(--rail);
+  gap: 0.9rem;
+}
+.tree__kids--nested > .tree__kid {
+  padding-top: 0;
+}
+.tree__kids--nested > .tree__kid::before {
+  top: 1.6rem;
+  left: -1.2rem;
+  right: auto;
+  width: 1.2rem;
+  border-top: var(--rail);
+  display: block;
+}
+.tree__kids--nested > .tree__kid::after {
+  display: none;
+}
+.tree__contract {
+  margin-top: 1.2rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--line-strong);
+}
+/* The contract strip is lemon in both themes: ink for the link and its focus ring */
+.contract--service a {
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.contract--service a:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+}
+@media (max-width: 959px) {
+  .tree__meta {
+    text-align: left;
+  }
+}

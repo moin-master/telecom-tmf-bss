@@ -107,6 +107,15 @@ class ProductOfferingPrice:
 
 
 @dataclass(frozen=True)
+class Attachment:
+    name: str
+    url: str
+    mime_type: str
+    attachment_type: str
+    description: str | None
+
+
+@dataclass(frozen=True)
 class ProductOffering:
     id: str
     name: str
@@ -123,6 +132,7 @@ class ProductOffering:
     bundled_product_offering: list[BundledProductOffering] = field(default_factory=list)
     product_offering_relationship: list[Relationship] = field(default_factory=list)
     product_offering_term: list[ProductOfferingTerm] = field(default_factory=list)
+    attachment: list[Attachment] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
